@@ -55,9 +55,9 @@ int main(int argc, char* argv[]) {
 
 
   // create a file for the event display
-  ofstream outPut;
-  if(idsp>0) outPut.open("forDisplay.txt");
-  if(idsp>0) outPut<<" pid x0 y0 z0 px py pz"<<endl;
+  //ofstream outPut;
+  //  if(idsp>0) outPut.open("forDisplay.txt");
+  //if(idsp>0) outPut<<" pid x0 y0 z0 px py pz"<<endl;
 
   // Book histogram.
   TH1F *hmultch = new TH1F("hmultch","charged multiplicity", 100, -0.5, 799.5);
@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
   cout<<"test test"<<endl;
 
   for (int iEvent = 0; iEvent < nEvent; ++iEvent) {
-    if(idsp>0) outPut<<"New Event "<<iEvent<<endl;
+    //if(idsp>0) outPut<<"New Event "<<iEvent<<endl;
 
     if (!pythia.next()) continue;
 
@@ -299,6 +299,7 @@ int main(int argc, char* argv[]) {
 
       if (pythia.event[i].isFinal() && pythia.event[i].isCharged()!=0) {  // count if stable and charged and output to display file
         ++nCharged;
+	/*
 	if(idsp>0) outPut<<pythia.event[i].id()<<" "<<
 		     pythia.event[i].xProd()<<" "<<
 		     pythia.event[i].yProd()<<" "<<
@@ -307,6 +308,7 @@ int main(int argc, char* argv[]) {
 		     pythia.event[i].py()<<" "<<
 		     pythia.event[i].pz()<<" "<<
 	  endl;
+	*/
       }
 
       if (pythia.event[i].isFinal() && pythia.event[i].isCharged()==0) // count if stable and neutral
@@ -705,7 +707,7 @@ int main(int argc, char* argv[]) {
 
 
   // close file for display
-  if(idsp>0)  outPut.close();
+  //if(idsp>0)  outPut.close();
 
   // Statistics on event generation.
   pythia.stat();

@@ -3,7 +3,7 @@
 # Axel Naumann, 2011-03-03
 ######################################################################
 
-PYTHIA8 := /data/users/eno/pythia8223/
+PYTHIA8 := /data/users/eno/pythia8224/
 
 # Need this to get SHAREDSUFFIX (e.g. dylib or so)
 -include $(PYTHIA8)/config.mk
