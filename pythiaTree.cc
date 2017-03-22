@@ -977,6 +977,7 @@ for(int hh=0;hh<10000000;hh++) {
   hdecays2->Write();
 
   hdaupt->Write();
+  hmapt->Write();
 
   delete outFile;
 

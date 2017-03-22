@@ -8,7 +8,7 @@ int dolog=0;
 void species() 
 { 
   TFile *f1 = new TFile("PythiaOutput_mdpi5_res.root");
-  TFile *f2 = new TFile("PythiaOutput_mdp5_nonres.root");  
+  TFile *f2 = new TFile("PythiaOutput_mdpi5_nonres.root");  
 
  
   gStyle->SetOptStat(0);
@@ -81,9 +81,8 @@ void species()
 
 
   
-  TH1F *A_cnt = static_cast<TH1F*>(f1->Get("hdecays2")->Clone());
-  float aaA = A_cnt->GetBinContent(3);
-  float aaA=1000.;
+  TH1F *A_cnt = static_cast<TH1F*>(f1->Get("hmapt")->Clone());
+  float aaA = A_cnt->GetEntries();
   cout<<" number of dark pions is "<<aaA<<endl;
   TH1F *A_pt = static_cast<TH1F*>(f1->Get("hdecays2")->Clone());
   A_pt->Scale(1./aaA);
@@ -99,10 +98,10 @@ void species()
   A_pt->Draw("");
 
 
-  TH1F *B_cnt = static_cast<TH1F*>(f2->Get("GenAnalyzer/count")->Clone());
-  float aaB = B_cnt->GetBinContent(3);
+  TH1F *B_cnt = static_cast<TH1F*>(f2->Get("hmapt")->Clone());
+  float aaB = B_cnt->GetEntries();
   cout<<" number of dark pions is "<<aaB<<endl;
-  TH1F *B_pt = static_cast<TH1F*>(f2->Get("GenAnalyzer/decays")->Clone());
+  TH1F *B_pt = static_cast<TH1F*>(f2->Get("hdecays2")->Clone());
   B_pt->Scale(1./aaB);
   
   B_pt->SetDirectory(0);
@@ -114,22 +113,10 @@ void species()
 
 
 
-  TH1F *C_cnt = static_cast<TH1F*>(f3->Get("GenAnalyzer/count")->Clone());
-  float aaC = C_cnt->GetBinContent(3);
-  cout<<" number of dark pions is "<<aaC<<endl;
-  TH1F *C_pt = static_cast<TH1F*>(f3->Get("GenAnalyzer/decays")->Clone());
-  
-  C_pt->SetDirectory(0);
-  C_pt->SetLineColor(4);
-  C_pt->SetLineWidth(3);
-  C_pt->SetStats(0);
-  C_pt->Scale(1./aaC);  
 
-  C_pt->Draw("same");
  
- lgd->AddEntry(A_pt, "dark pion 10 GeV", "l");
- lgd->AddEntry(B_pt, "5 GeV", "l");
- lgd->AddEntry(C_pt, "2 GeV", "l");
+ lgd->AddEntry(A_pt, "dark pion 5 GeV, resonant decay", "l");
+ lgd->AddEntry(B_pt, "non resonant decay", "l");
  lgd->Draw();
     // Writing the lumi information and the CMS "logo"
    // second parameter in example_plot is iPos, which drives the position of the CMS logo in the plot
