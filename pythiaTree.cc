@@ -230,6 +230,14 @@ for(int hh=0;hh<10000000;hh++) {
   }
 
 
+  TH1F *hdecays2 = new TH1F("hdecays2"," decays2 ",3,0,3);
+  hdecays2->SetStats(0);
+  hdecays2->SetCanExtend(TH1::kAllAxes);
+  for(int ij=0;ij<npart;ij++) {
+    hdecays2->Fill(partNames[ij],1);
+  }
+
+
 
 
   // initialize slowjet
@@ -342,7 +350,9 @@ for(int hh=0;hh<10000000;hh++) {
 	Float_t gammaHV = pythia.event[i].e()/ massHV;
 	Float_t betaHV = pythia.event[i].pAbs()/pythia.event[i].e();
 	Float_t decaypT = decayLHV/betaHV/3e10/gammaHV;
-	Int_t ndauHV = pythia.event[i].daughter2()-pythia.event[i].daughter1()+1;
+	Int_t ndauHV=0; 
+	if(pythia.event[i].daughter1()!=0) ndauHV=pythia.event[i].daughter2()-pythia.event[i].daughter1()+1;
+	if(idbg>8) std::cout<<" for particle "<<i<<" number of daughters is "<<ndauHV<<std::endl;
 	Int_t HV = (idHV/abs(idHV))*(abs(idHV)-4900000);
 	hppidHV->Fill( HV);  // get the type of the particle
         hmassHV->Fill( HV,mHV );
@@ -362,6 +372,7 @@ for(int hh=0;hh<10000000;hh++) {
 	  if(pythia.event[i].daughter2()!=0) hppid2ddg->Fill(pythia.event[pythia.event[i].daughter2()].id()-4900000);
 	}
 	if(ndauHV>0) { // if it is not a stable HV particle
+	  if(idbg>8) std::cout<<"entering studies of unstable HVs"<<std::endl;
 
 	  //          if( abs(idHV)==4900113) {  // dark rho
 	  //	    cout<<"danger danger will robinson dark rho number daughters is "<<ndauHV<<endl;
@@ -374,8 +385,12 @@ for(int hh=0;hh<10000000;hh++) {
 	  //          }
 
 	  Int_t nstable=0;
+	  Int_t nHVdau=0;
 	  for(int ij=0; ij<ndauHV; ++ij) {  // loop over all the HV particle's daughters
 	    Int_t iii = pythia.event[i].daughter1()+ij;
+	    Int_t idauid = abs(pythia.event[iii].id());
+	    if(idauid>4900000) nHVdau++;
+	  
 
 	    if(pythia.event[iii].isFinal()) {  // for stable daughters of HV particles
 	      Float_t d0dHV = sqrt(pow(pythia.event[iii].xProd(),2)+pow(pythia.event[iii].yProd(),2));
@@ -415,6 +430,61 @@ for(int hh=0;hh<10000000;hh++) {
             hdecays->Fill(partNames[pdgNum[pythia.event[iii].id()]],1);
 	  }  // end loop over HV daughters
 	  }  //end if dark pion with stable daughters
+	  // find all the daughters 
+	  vector<int> ptalldau;
+	  if(nHVdau==0) {  // if none of the daughters are another HV particle
+	    if(idbg>1) cout<<" making decay tree for particle "<<i<<" with number of daughters "<<ndauHV<<endl;
+	    for(int ij=0; ij<ndauHV; ++ij) {  // loop over all the HV particle's daughters
+	      Int_t iii = pythia.event[i].daughter1()+ij;
+	      if(idbg>1) std::cout<<"     adding particle "<<iii<<endl;
+	      ptalldau.push_back(iii);
+	    }  // end loop over HV daughters
+	    bool stop=false;
+	    int isize,sizeold;
+            sizeold = 0;
+	    while(!stop) {
+	      isize = ptalldau.size();
+	      if(idbg>1) std::cout<<"    current size is "<<isize<<std::endl;
+	    
+	      stop=true;
+	      if(idbg>1) std::cout<<" size old isize is "<<sizeold<<" "<<isize<<std::endl;
+	      for(int hh=sizeold;hh<isize;hh++) {
+	        if(pythia.event[ptalldau[hh]].daughter1()!=0) {
+		  stop=false;
+	          int  idat = pythia.event[ptalldau[hh]].daughter2()-pythia.event[ptalldau[hh]].daughter1()+1;	      
+	          for(int jj=0;jj<idat;jj++) {
+		    ptalldau.push_back(pythia.event[ptalldau[hh]].daughter1()+jj);
+		    if(idbg>1) std::cout<<" adding particle "<<pythia.event[ptalldau[hh]].daughter1()+jj<<std::endl;
+	          }
+		}
+	      }
+	      sizeold=isize;
+	      if(idbg>1) std::cout<<" now sizeold is "<<sizeold<<std::endl;
+	      if(sizeold>500) {
+		std::cout<<" danger danger will robinson too many particles"<<std::endl;
+		stop=true;
+	      }
+	      if(idbg>1) std::cout<<"  stop "<<stop<<std::endl;
+	    }
+	    if(idbg>1) std::cout<<"now making stable daughters"<<std::endl;
+	    vector<int> ptstdau;
+	    isize = ptalldau.size();
+	    for(int hh=0;hh<isize;hh++) {
+	      // make a list of the stable one
+	      if(pythia.event[ptalldau[hh]].daughter1()==0) {
+		ptstdau.push_back(ptalldau[hh]);
+	        if(idbg>1) std::cout<<" adding stable particle "<<ptalldau[hh]<<std::endl;
+	      }
+	    }
+	    isize = ptstdau.size();
+	    for(int hh=0;hh<isize;hh++) {
+              hdecays2->Fill(partNames[pdgNum[pythia.event[ptstdau[hh]].id()]],1);
+	    }
+
+
+
+	  }
+
 	}  // end if HV partiles with daughters
       }  // end if an HV
 
@@ -894,6 +964,12 @@ for(int hh=0;hh<10000000;hh++) {
   hdecays->LabelsOption("v");
   hdecays->LabelsOption("a");
   hdecays->Write();
+
+
+  hdecays2->LabelsDeflate();
+  hdecays2->LabelsOption("v");
+  hdecays2->LabelsOption("a");
+  hdecays2->Write();
 
   delete outFile;
 
