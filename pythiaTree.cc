@@ -223,6 +223,7 @@ for(int hh=0;hh<10000000;hh++) {
   TH2F *hpTdqdq71 = new TH2F("hpTdqdq71"," pt of dark quark versus dark quark 71",500,0.,1000.,500,0.,1000.);
 
   TH1F *hdaupt = new TH1F("hdaupt"," pT of stable daughters",100,0.,50.);
+  TH1F *hmapt = new TH1F("hmapt"," pT of mother",100,0.,50.);
 
   TH1F *hdecays = new TH1F("hdecays"," decays ",3,0,3);
   hdecays->SetStats(0);
@@ -436,6 +437,7 @@ for(int hh=0;hh<10000000;hh++) {
 	  vector<int> ptalldau;
 	  if(nHVdau==0) {  // if none of the daughters are another HV particle
 	    if(idbg>1) cout<<" making decay tree for particle "<<i<<" with number of daughters "<<ndauHV<<endl;
+	    hmapt->Fill(pythia.event[i].pT());
 	    for(int ij=0; ij<ndauHV; ++ij) {  // loop over all the HV particle's daughters
 	      Int_t iii = pythia.event[i].daughter1()+ij;
 	      if(idbg>1) std::cout<<"     adding particle "<<iii<<endl;

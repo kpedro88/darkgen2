@@ -7,8 +7,8 @@
 int dolog=0;
 void species() 
 { 
-  TFile *f1 = new TFile("X_d_1000_mass_pi_d_10_tau_pi_d_0p001.root");
-  TFile *f2 = new TFile("X_d_1000_mass_pi_d_5_tau_pi_d_0p001.root");  
+  TFile *f1 = new TFile("PythiaOutput_mdpi5_res.root");
+  TFile *f2 = new TFile("PythiaOutput_mdp5_nonres.root");  
 
  
   gStyle->SetOptStat(0);
@@ -81,10 +81,11 @@ void species()
 
 
   
-  TH1F *A_cnt = static_cast<TH1F*>(f1->Get("GenAnalyzer/count")->Clone());
+  TH1F *A_cnt = static_cast<TH1F*>(f1->Get("hdecays2")->Clone());
   float aaA = A_cnt->GetBinContent(3);
+  float aaA=1000.;
   cout<<" number of dark pions is "<<aaA<<endl;
-  TH1F *A_pt = static_cast<TH1F*>(f1->Get("GenAnalyzer/decays")->Clone());
+  TH1F *A_pt = static_cast<TH1F*>(f1->Get("hdecays2")->Clone());
   A_pt->Scale(1./aaA);
 
   A_pt->GetYaxis()->SetTitle("mean per decay");  
