@@ -14,6 +14,10 @@
 // Stdlib header file for input and output.
 #include <iostream>
 #include <fstream>
+#include <stdlib.h>
+#include <unordered_map>
+
+using namespace std;
 
 // Header file to access Pythia 8 program elements.
 #include "Pythia8/Pythia.h"
@@ -30,10 +34,12 @@
 // ROOT, for saving file.
 #include "TFile.h"
 
+
+
 using namespace Pythia8;
 
 
-Int_t idsp=1;
+Int_t idsp=0;
 Int_t idbg=0;
 
 int nCharged, nNeutral, nTot;
@@ -55,9 +61,109 @@ int main(int argc, char* argv[]) {
 
 
   // create a file for the event display
-  //ofstream outPut;
-  //  if(idsp>0) outPut.open("forDisplay.txt");
-  //if(idsp>0) outPut<<" pid x0 y0 z0 px py pz"<<endl;
+  ofstream outPut;
+  if(idsp>0) outPut.open("forDisplay.txt");
+  if(idsp>0) outPut<<" pid x0 y0 z0 px py pz"<<endl;
+
+
+unordered_map<int,std::string> pdgName;
+unordered_map<int,std::string> darkName;
+unordered_map<int,int> pdgNum;
+
+
+const int npart=26;
+const char *partNames[npart] = {
+  "pi0",
+  "rho0",
+  "pi+-",
+  "rho+-",
+  "eta",
+  "omega",
+  "K0",
+  "K*",
+  "K+-",
+  "K*+-",
+  "etaprime",
+  "phi",
+  "Delta-",
+  "n",
+  "Delta0",
+  "p",
+  "Delta+",
+  "Delta++",
+  "Sigma-",
+  "Sigma*-",
+  "Lambda",
+  "Sigma0",
+  "Sigma*0",
+  "Sigma+",
+  "Omega*0",
+    "unknown"
+};
+
+
+
+pdgName.emplace(111,"pi0");
+pdgName.emplace(113,"rho0");
+pdgName.emplace(211,"pi+-");
+pdgName.emplace(213,"rho+-");
+pdgName.emplace(221,"eta");
+pdgName.emplace(223,"omega");
+pdgName.emplace(311,"K0");
+pdgName.emplace(313,"K*");
+pdgName.emplace(321,"K+-");
+pdgName.emplace(323,"K*+-");
+pdgName.emplace(331,"etaprime");
+pdgName.emplace(333,"phi");
+pdgName.emplace(1114,"Delta-");
+pdgName.emplace(2112,"n");
+pdgName.emplace(2114,"Delta0");
+pdgName.emplace(2212,"p");
+pdgName.emplace(2214,"Delta+");
+pdgName.emplace(2224,"Delta++");
+pdgName.emplace(3112,"Sigma-");
+pdgName.emplace(3114,"Sigma*-");
+pdgName.emplace(3122,"Lambda");
+pdgName.emplace(3212,"Sigma0");
+pdgName.emplace(3214,"Sigma*0");
+pdgName.emplace(3222,"Sigma+");
+pdgName.emplace(3324,"Omega*0");
+
+pdgNum.emplace(111,0);
+pdgNum.emplace(113,1);
+pdgNum.emplace(211,2);
+pdgNum.emplace(213,3);
+pdgNum.emplace(221,4);
+pdgNum.emplace(223,5);
+pdgNum.emplace(311,6);
+pdgNum.emplace(313,7);
+pdgNum.emplace(321,8);
+pdgNum.emplace(323,9);
+pdgNum.emplace(331,10);
+pdgNum.emplace(333,11);
+pdgNum.emplace(1114,12);
+pdgNum.emplace(2112,13);
+pdgNum.emplace(2114,14);
+pdgNum.emplace(2212,15);
+pdgNum.emplace(2214,16);
+pdgNum.emplace(2224,17);
+pdgNum.emplace(3112,18);
+pdgNum.emplace(3114,19);
+pdgNum.emplace(3122,20);
+pdgNum.emplace(3212,21);
+pdgNum.emplace(3214,22);
+pdgNum.emplace(3222,23);
+pdgNum.emplace(3324,24);
+
+std::unordered_map<int,std::string>::iterator got;
+std::unordered_map<int,int>::iterator got2;
+for(int hh=0;hh<10000000;hh++) {
+  got = pdgName.find(hh);
+  if(got == pdgName.end()) pdgName.emplace(hh,"unknown");
+  got2 = pdgNum.find(hh);
+  if(got2 == pdgNum.end()) pdgNum.emplace(hh,25);
+ }
+
 
   // Book histogram.
   TH1F *hmultch = new TH1F("hmultch","charged multiplicity", 100, -0.5, 799.5);
@@ -116,6 +222,15 @@ int main(int argc, char* argv[]) {
   TH1F *hdRdqdq71 = new TH1F("hdRdqdq71","delta R between dark quark and dark quark 71 ",100,0.,5.);
   TH2F *hpTdqdq71 = new TH2F("hpTdqdq71"," pt of dark quark versus dark quark 71",500,0.,1000.,500,0.,1000.);
 
+  TH1F *hdecays = new TH1F("hdecays"," decays ",3,0,3);
+  hdecays->SetStats(0);
+  hdecays->SetCanExtend(TH1::kAllAxes);
+  for(int ij=0;ij<npart;ij++) {
+    hdecays->Fill(partNames[ij],1);
+  }
+
+
+
 
   // initialize slowjet
   SlowJet aSlowJet(-1,0.4,35.,2.5,2,1); // power, R, ptjetmin, etamax, which particle, mass
@@ -146,7 +261,7 @@ int main(int argc, char* argv[]) {
   cout<<"test test"<<endl;
 
   for (int iEvent = 0; iEvent < nEvent; ++iEvent) {
-    //if(idsp>0) outPut<<"New Event "<<iEvent<<endl;
+    if(idsp>0) outPut<<"New Event "<<iEvent<<endl;
 
     if (!pythia.next()) continue;
 
@@ -216,7 +331,7 @@ int main(int argc, char* argv[]) {
 	  }
 	}
       }
-      // look at all HV particles
+      // look at all HV particles and make list of dark pions with stable daughters and put in ptdpise
       if(abs(pythia.event[i].id())>4900000) {
 	int idHV = pythia.event[i].id();
 	Float_t mHV = pythia.event[i].m();
@@ -293,13 +408,20 @@ int main(int argc, char* argv[]) {
 	      //	      }
 	    }	// end if final
 	  }  // end loop over HV daughters
-	}
-      }
+	  // for dark pions that have at least one stable daughter, make a pretty plot
+	  if(nstable>0&& abs(pythia.event[i].id())==4900111) {
+	  for(int ij=0; ij<ndauHV; ++ij) {  // loop over all the HV particle's daughters
+	    Int_t iii = pythia.event[i].daughter1()+ij;
+            hdecays->Fill(partNames[pdgNum[pythia.event[iii].id()]],1);
+	  }  // end loop over HV daughters
+	  }  //end if dark pion with stable daughters
+	}  // end if HV partiles with daughters
+      }  // end if an HV
 
-
+      // look at stable, charged particles
       if (pythia.event[i].isFinal() && pythia.event[i].isCharged()!=0) {  // count if stable and charged and output to display file
         ++nCharged;
-	/*
+	
 	if(idsp>0) outPut<<pythia.event[i].id()<<" "<<
 		     pythia.event[i].xProd()<<" "<<
 		     pythia.event[i].yProd()<<" "<<
@@ -308,17 +430,20 @@ int main(int argc, char* argv[]) {
 		     pythia.event[i].py()<<" "<<
 		     pythia.event[i].pz()<<" "<<
 	  endl;
-	*/
+	
       }
-
+      //look at stable and neutral
       if (pythia.event[i].isFinal() && pythia.event[i].isCharged()==0) // count if stable and neutral
         ++nNeutral;
 
+      //look at all stable particles
       if(pythia.event[i].isFinal()) {  // if stable
 	hppid->Fill( pythia.event[i].id() );  // get the type of the particle
 	nTot=nTot+1;  //count
 	//	cout<<"   id px py pz e "<<pythia.event[i].id()<<" "<<pythia.event[i].px()<<" "<<pythia.event[i].py()<<" "<<pythia.event[i].pz()<<" "<<pythia.event[i].e()<<std::endl;
       }
+
+
     }  // end particle list loop 
     // Fill charged multiplicity in histogram. End event loop.
     hmultch->Fill( nCharged );
@@ -707,7 +832,7 @@ int main(int argc, char* argv[]) {
 
 
   // close file for display
-  //if(idsp>0)  outPut.close();
+  if(idsp>0)  outPut.close();
 
   // Statistics on event generation.
   pythia.stat();
@@ -764,6 +889,12 @@ int main(int argc, char* argv[]) {
   hjet4pT->Write();
   hjety->Write();
   hjetphi->Write();
+
+  hdecays->LabelsDeflate();
+  hdecays->LabelsOption("v");
+  hdecays->LabelsOption("a");
+  hdecays->Write();
+
   delete outFile;
 
   // Done.
