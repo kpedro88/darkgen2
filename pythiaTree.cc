@@ -222,6 +222,8 @@ for(int hh=0;hh<10000000;hh++) {
   TH1F *hdRdqdq71 = new TH1F("hdRdqdq71","delta R between dark quark and dark quark 71 ",100,0.,5.);
   TH2F *hpTdqdq71 = new TH2F("hpTdqdq71"," pt of dark quark versus dark quark 71",500,0.,1000.,500,0.,1000.);
 
+  TH1F *hdaupt = new TH1F("hdaupt"," pT of stable daughters",100,0.,50.);
+
   TH1F *hdecays = new TH1F("hdecays"," decays ",3,0,3);
   hdecays->SetStats(0);
   hdecays->SetCanExtend(TH1::kAllAxes);
@@ -479,6 +481,7 @@ for(int hh=0;hh<10000000;hh++) {
 	    isize = ptstdau.size();
 	    for(int hh=0;hh<isize;hh++) {
               hdecays2->Fill(partNames[pdgNum[pythia.event[ptstdau[hh]].id()]],1);
+	      hdaupt->Fill(pythia.event[ptstdau[hh]].pT());
 	    }
 
 
@@ -970,6 +973,8 @@ for(int hh=0;hh<10000000;hh++) {
   hdecays2->LabelsOption("v");
   hdecays2->LabelsOption("a");
   hdecays2->Write();
+
+  hdaupt->Write();
 
   delete outFile;
 
