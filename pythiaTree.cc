@@ -71,33 +71,20 @@ unordered_map<int,std::string> darkName;
 unordered_map<int,int> pdgNum;
 
 
-const int npart=26;
+const int npart=13;
 const char *partNames[npart] = {
   "pi0",
   "rho0",
   "pi+-",
   "rho+-",
   "eta",
-  "omega",
-  "K0",
-  "K*",
   "K+-",
-  "K*+-",
-  "etaprime",
   "phi",
   "Delta-",
   "n",
-  "Delta0",
   "p",
-  "Delta+",
-  "Delta++",
-  "Sigma-",
-  "Sigma*-",
-  "Lambda",
-  "Sigma0",
-  "Sigma*0",
-  "Sigma+",
-  "Omega*0",
+  "gamma",
+  "KL",
     "unknown"
 };
 
@@ -108,52 +95,28 @@ pdgName.emplace(113,"rho0");
 pdgName.emplace(211,"pi+-");
 pdgName.emplace(213,"rho+-");
 pdgName.emplace(221,"eta");
-pdgName.emplace(223,"omega");
-pdgName.emplace(311,"K0");
-pdgName.emplace(313,"K*");
 pdgName.emplace(321,"K+-");
-pdgName.emplace(323,"K*+-");
-pdgName.emplace(331,"etaprime");
 pdgName.emplace(333,"phi");
 pdgName.emplace(1114,"Delta-");
 pdgName.emplace(2112,"n");
-pdgName.emplace(2114,"Delta0");
 pdgName.emplace(2212,"p");
-pdgName.emplace(2214,"Delta+");
-pdgName.emplace(2224,"Delta++");
-pdgName.emplace(3112,"Sigma-");
-pdgName.emplace(3114,"Sigma*-");
-pdgName.emplace(3122,"Lambda");
-pdgName.emplace(3212,"Sigma0");
-pdgName.emplace(3214,"Sigma*0");
-pdgName.emplace(3222,"Sigma+");
-pdgName.emplace(3324,"Omega*0");
+ pdgName.emplace(22,"gamma");
+ pdgName.emplace(130,"KL");
+
 
 pdgNum.emplace(111,0);
 pdgNum.emplace(113,1);
 pdgNum.emplace(211,2);
 pdgNum.emplace(213,3);
 pdgNum.emplace(221,4);
-pdgNum.emplace(223,5);
-pdgNum.emplace(311,6);
-pdgNum.emplace(313,7);
-pdgNum.emplace(321,8);
-pdgNum.emplace(323,9);
-pdgNum.emplace(331,10);
-pdgNum.emplace(333,11);
-pdgNum.emplace(1114,12);
-pdgNum.emplace(2112,13);
-pdgNum.emplace(2114,14);
-pdgNum.emplace(2212,15);
-pdgNum.emplace(2214,16);
-pdgNum.emplace(2224,17);
-pdgNum.emplace(3112,18);
-pdgNum.emplace(3114,19);
-pdgNum.emplace(3122,20);
-pdgNum.emplace(3212,21);
-pdgNum.emplace(3214,22);
-pdgNum.emplace(3222,23);
-pdgNum.emplace(3324,24);
+pdgNum.emplace(321,5);
+pdgNum.emplace(333,6);
+pdgNum.emplace(1114,7);
+pdgNum.emplace(2112,8);
+pdgNum.emplace(2212,9);
+ pdgNum.emplace(22,10);
+ pdgNum.emplace(130,11);
+
 
 std::unordered_map<int,std::string>::iterator got;
 std::unordered_map<int,int>::iterator got2;
@@ -161,7 +124,7 @@ for(int hh=0;hh<10000000;hh++) {
   got = pdgName.find(hh);
   if(got == pdgName.end()) pdgName.emplace(hh,"unknown");
   got2 = pdgNum.find(hh);
-  if(got2 == pdgNum.end()) pdgNum.emplace(hh,25);
+  if(got2 == pdgNum.end()) pdgNum.emplace(hh,npart-1);
  }
 
 
@@ -482,8 +445,14 @@ for(int hh=0;hh<10000000;hh++) {
 	    }
 	    isize = ptstdau.size();
 	    for(int hh=0;hh<isize;hh++) {
-              hdecays2->Fill(partNames[pdgNum[pythia.event[ptstdau[hh]].id()]],1);
+	      //std::cout<<"check "<<partNames[pdgNum[pythia.event[ptstdau[hh]].id()]]<<" "<<pdgNum[pythia.event[ptstdau[hh]].id()]<<" "<<pythia.event[ptstdau[hh]].id()<<std::endl;
+	      if( (pdgNum[pythia.event[ptstdau[hh]].id()]<0)||
+                  (pdgNum[pythia.event[ptstdau[hh]].id()]>npart-1)) {
+		  std::cout<<"unknow stable "<<pythia.event[ptstdau[hh]].id()<<std::endl;
+	    } else {
 	      hdaupt->Fill(pythia.event[ptstdau[hh]].pT());
+              hdecays2->Fill(partNames[pdgNum[pythia.event[ptstdau[hh]].id()]],1);
+	    }
 	    }
 
 
