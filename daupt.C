@@ -5,7 +5,7 @@
 #include "TH1F.h"
 
 int dolog=0;
-void species() 
+void daupt() 
 { 
   TFile *f1 = new TFile("res.root");
   TFile *f2 = new TFile("nonres.root");  
@@ -69,7 +69,7 @@ void species()
   int n_ = 2;
   
   float x1_l = 0.75;
-  float y1_l = 0.90;
+  float y1_l = 0.60;
   
   float dx_l = 0.60;
   float dy_l = 0.1;
@@ -81,26 +81,14 @@ void species()
 
 
   
-  TH1F *A_cnt = static_cast<TH1F*>(f1->Get("hmapt")->Clone());
-  A_cnt->SetDirectory(0);
-  float aaA = A_cnt->GetEntries();
-  cout<<" number of dark pions for A is "<<aaA<<endl;
-  TH1F *A_pt = static_cast<TH1F*>(f1->Get("hdecays2")->Clone());
+
+  TH1F *A_pt = static_cast<TH1F*>(f1->Get("hdaupt")->Clone());
   A_pt->SetDirectory(0);
+  float aaA = A_pt->GetEntries();
+
   A_pt->Scale(1./aaA);
 
-  TH1F *B_cnt = static_cast<TH1F*>(f2->Get("hmapt")->Clone());
-  B_cnt->SetDirectory(0);
-  float aaB = B_cnt->GetEntries();
-  cout<<" number of dark pions for B is "<<aaB<<endl;
-  TH1F *B_pt = static_cast<TH1F*>(f2->Get("hdecays2")->Clone());
-  B_pt->SetDirectory(0);
-  B_pt->Scale(1./aaB);
-
-  float max = std::max(A_pt->GetMaximum(),B_pt->GetMaximum());
-    A_pt->SetMaximum(max*1.3);
-
-  A_pt->GetYaxis()->SetTitle("mean per decay");  
+  A_pt->GetYaxis()->SetTitle("mean per decay per 2 GeV");  
   A_pt->GetYaxis()->SetTitleSize(0.05);  
 
 
@@ -111,6 +99,12 @@ void species()
   A_pt->Draw("");
 
 
+
+  TH1F *B_pt = static_cast<TH1F*>(f2->Get("hdaupt")->Clone());
+  B_pt->SetDirectory(0);
+  float aaB = B_pt->GetEntries();
+
+  B_pt->Scale(1./aaB);
   
 
   B_pt->SetLineColor(2);

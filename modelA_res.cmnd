@@ -55,5 +55,5 @@ HiddenValley:pTminFSR = 11.
 ! Settings for dark meson decays. Best don't mess with these
 4900111:0:all =  1 1.0    102    1       -1      	! dark pion decay to down quarks
 4900113:0:all =  1 0.999  102  4900111  4900111	! dark vector to dark pions 99.9%
-4900113:addchannel = 0.001 102 1 -1	! dark vector to down quarks 0.1%
+4900113:addchannel = 1 0.001 102 1 -1	! dark vector to down quarks 0.1%
 

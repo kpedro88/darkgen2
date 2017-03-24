@@ -21,6 +21,7 @@ using namespace std;
 
 // Header file to access Pythia 8 program elements.
 #include "Pythia8/Pythia.h"
+//#include "Pythia8Plugins/HepMC2.h"
 
 // ROOT, for histogramming.
 #include "TH1.h"
@@ -41,6 +42,7 @@ using namespace Pythia8;
 
 Int_t idsp=0;
 Int_t idbg=0;
+//Int_t ihepMCout=0; 
 
 int nCharged, nNeutral, nTot;
 
@@ -66,20 +68,28 @@ int main(int argc, char* argv[]) {
   if(idsp>0) outPut<<" pid x0 y0 z0 px py pz"<<endl;
 
 
+  // create a file for hepMC output if needed
+
+  //  if(ihepMCout>0) {
+  //  HepMC::Pythia8ToHepMC ToHepMC;
+  //  HepMC::IO_GenEvent ascii_io("hepmc.out", std::ios::out);
+  // }
+
+
+
+
 unordered_map<int,std::string> pdgName;
-unordered_map<int,std::string> darkName;
 unordered_map<int,int> pdgNum;
 
 
-const int npart=13;
+const int npart=12;
 const char *partNames[npart] = {
-  "pi0",
-  "rho0",
+  "e",
+  "nue",
+  "mu",
+  "numu",
   "pi+-",
-  "rho+-",
-  "eta",
   "K+-",
-  "phi",
   "Delta-",
   "n",
   "p",
@@ -89,42 +99,47 @@ const char *partNames[npart] = {
 };
 
 
-
-pdgName.emplace(111,"pi0");
-pdgName.emplace(113,"rho0");
+ pdgName.emplace(11,"e");
+  pdgName.emplace(12,"nue");
+ pdgName.emplace(13,"mu");
+ pdgName.emplace(14,"numu");
 pdgName.emplace(211,"pi+-");
-pdgName.emplace(213,"rho+-");
-pdgName.emplace(221,"eta");
 pdgName.emplace(321,"K+-");
-pdgName.emplace(333,"phi");
 pdgName.emplace(1114,"Delta-");
 pdgName.emplace(2112,"n");
 pdgName.emplace(2212,"p");
  pdgName.emplace(22,"gamma");
  pdgName.emplace(130,"KL");
 
-
-pdgNum.emplace(111,0);
-pdgNum.emplace(113,1);
-pdgNum.emplace(211,2);
-pdgNum.emplace(213,3);
-pdgNum.emplace(221,4);
+ pdgNum.emplace(11,0);
+ pdgNum.emplace(12,1);
+ pdgNum.emplace(13,2);
+ pdgNum.emplace(14,3);
+pdgNum.emplace(211,4);
 pdgNum.emplace(321,5);
-pdgNum.emplace(333,6);
-pdgNum.emplace(1114,7);
-pdgNum.emplace(2112,8);
-pdgNum.emplace(2212,9);
- pdgNum.emplace(22,10);
- pdgNum.emplace(130,11);
+pdgNum.emplace(1114,6);
+pdgNum.emplace(2112,7);
+pdgNum.emplace(2212,8);
+ pdgNum.emplace(22,9);
+ pdgNum.emplace(130,10);
 
 
 std::unordered_map<int,std::string>::iterator got;
 std::unordered_map<int,int>::iterator got2;
-for(int hh=0;hh<10000000;hh++) {
+for(int hh=0;hh<1000;hh++) {
   got = pdgName.find(hh);
   if(got == pdgName.end()) pdgName.emplace(hh,"unknown");
   got2 = pdgNum.find(hh);
   if(got2 == pdgNum.end()) pdgNum.emplace(hh,npart-1);
+ }
+
+
+ std::cout<<" checking pdgName and pdgNum"<<std::endl;
+for(int hh=0;hh<1000;hh++) {
+  got = pdgName.find(hh);
+  got2 = pdgNum.find(hh);
+  std::cout<<hh<<" name  "<<(*got).first<<" "<<(*got).second<<std::endl;
+  std::cout<<hh<<" num  "<<(*got2).first<<" "<<(*got2).second<<std::endl;
  }
 
 
@@ -185,9 +200,9 @@ for(int hh=0;hh<10000000;hh++) {
   TH1F *hdRdqdq71 = new TH1F("hdRdqdq71","delta R between dark quark and dark quark 71 ",100,0.,5.);
   TH2F *hpTdqdq71 = new TH2F("hpTdqdq71"," pt of dark quark versus dark quark 71",500,0.,1000.,500,0.,1000.);
 
-  TH1F *hdaupt = new TH1F("hdaupt"," pT of stable daughters",100,0.,50.);
-  TH1F *hmapt = new TH1F("hmapt"," pT of mother",100,0.,50.);
-
+  TH1F *hdaupt = new TH1F("hdaupt"," pT of stable daughters",50,0.,10.);
+  TH1F *hmapt = new TH1F("hmapt"," pT of mother",50,0.,100.);
+  
   TH1F *hdecays = new TH1F("hdecays"," decays ",3,0,3);
   hdecays->SetStats(0);
   hdecays->SetCanExtend(TH1::kAllAxes);
@@ -202,8 +217,7 @@ for(int hh=0;hh<10000000;hh++) {
   for(int ij=0;ij<npart;ij++) {
     hdecays2->Fill(partNames[ij],1);
   }
-
-
+  
 
 
   // initialize slowjet
@@ -393,17 +407,19 @@ for(int hh=0;hh<10000000;hh++) {
 	  if(nstable>0&& abs(pythia.event[i].id())==4900111) {
 	  for(int ij=0; ij<ndauHV; ++ij) {  // loop over all the HV particle's daughters
 	    Int_t iii = pythia.event[i].daughter1()+ij;
-            hdecays->Fill(partNames[pdgNum[pythia.event[iii].id()]],1);
+	    hdecays->Fill(partNames[pdgNum[pythia.event[iii].id()]],1);
 	  }  // end loop over HV daughters
 	  }  //end if dark pion with stable daughters
 	  // find all the daughters 
 	  vector<int> ptalldau;
 	  if(nHVdau==0) {  // if none of the daughters are another HV particle
-	    if(idbg>1) cout<<" making decay tree for particle "<<i<<" with number of daughters "<<ndauHV<<endl;
+	    if(idbg>1) 
+	    cout<<" making decay tree for particle "<<i<<" with number of daughters "<<ndauHV<<" and type "<<pythia.event[i].id()<<endl;
 	    hmapt->Fill(pythia.event[i].pT());
 	    for(int ij=0; ij<ndauHV; ++ij) {  // loop over all the HV particle's daughters
 	      Int_t iii = pythia.event[i].daughter1()+ij;
-	      if(idbg>1) std::cout<<"     adding particle "<<iii<<endl;
+	      	      if(idbg>1) 
+	      std::cout<<"     adding particle "<<iii<<" with id "<<pythia.event[iii].id()<<endl;
 	      ptalldau.push_back(iii);
 	    }  // end loop over HV daughters
 	    bool stop=false;
@@ -411,47 +427,69 @@ for(int hh=0;hh<10000000;hh++) {
             sizeold = 0;
 	    while(!stop) {
 	      isize = ptalldau.size();
-	      if(idbg>1) std::cout<<"    current size is "<<isize<<std::endl;
+	            if(idbg>1) 
+std::cout<<"    current size is "<<isize<<std::endl;
 	    
 	      stop=true;
-	      if(idbg>1) std::cout<<" size old isize is "<<sizeold<<" "<<isize<<std::endl;
+	      	      if(idbg>1) 
+std::cout<<" size old isize is "<<sizeold<<" "<<isize<<std::endl;
 	      for(int hh=sizeold;hh<isize;hh++) {
 	        if(pythia.event[ptalldau[hh]].daughter1()!=0) {
 		  stop=false;
 	          int  idat = pythia.event[ptalldau[hh]].daughter2()-pythia.event[ptalldau[hh]].daughter1()+1;	      
 	          for(int jj=0;jj<idat;jj++) {
 		    ptalldau.push_back(pythia.event[ptalldau[hh]].daughter1()+jj);
-		    if(idbg>1) std::cout<<" adding particle "<<pythia.event[ptalldau[hh]].daughter1()+jj<<std::endl;
+		    		    if(idbg>1) 
+std::cout<<" adding particle "<<pythia.event[ptalldau[hh]].daughter1()+jj<<" with id "<<pythia.event[ptalldau[hh]].id()<<std::endl;
 	          }
 		}
 	      }
 	      sizeold=isize;
-	      if(idbg>1) std::cout<<" now sizeold is "<<sizeold<<std::endl;
+	      	      if(idbg>1) 
+std::cout<<" now sizeold is "<<sizeold<<std::endl;
 	      if(sizeold>500) {
 		std::cout<<" danger danger will robinson too many particles"<<std::endl;
 		stop=true;
 	      }
-	      if(idbg>1) std::cout<<"  stop "<<stop<<std::endl;
+	      	      if(idbg>1) 
+std::cout<<"  stop "<<stop<<std::endl;
 	    }
-	    if(idbg>1) std::cout<<"now making stable daughters"<<std::endl;
+	    	    if(idbg>1) 
+std::cout<<"now making stable daughters"<<std::endl;
+
 	    vector<int> ptstdau;
 	    isize = ptalldau.size();
 	    for(int hh=0;hh<isize;hh++) {
 	      // make a list of the stable one
 	      if(pythia.event[ptalldau[hh]].daughter1()==0) {
 		ptstdau.push_back(ptalldau[hh]);
-	        if(idbg>1) std::cout<<" adding stable particle "<<ptalldau[hh]<<std::endl;
+		/*
+ std::cout<<" checking pdgName and pdgNum"<<std::endl;
+for(int hh=0;hh<1000;hh++) {
+  got = pdgName.find(hh);
+  got2 = pdgNum.find(hh);
+  std::cout<<hh<<" name  "<<(*got).first<<" "<<(*got).second<<std::endl;
+  std::cout<<hh<<" num  "<<(*got2).first<<" "<<(*got2).second<<std::endl;
+  std::cout<<hh<<" partNames is "<<partNames[(*got2).second]<<std::endl;
+  std::cout<<hh<<" another try "<<pdgNum[hh]<<" "<<partNames[pdgNum[hh]]<<std::endl;
+ }
+		*/
+ int ihaha2 = ((pythia.event[ptalldau[hh]]).id());
+ if(ihaha2<0) ihaha2*=-1;
+ int ihaha =pdgNum[ihaha2];
+		if(idbg>1)  std::cout<<" adding stable particle "<<ptalldau[hh]<<" with id "<<ihaha2<<" and pdgNum "<<ihaha <<" "<<partNames[ihaha]<<
+std::endl;
 	      }
 	    }
 	    isize = ptstdau.size();
 	    for(int hh=0;hh<isize;hh++) {
 	      //std::cout<<"check "<<partNames[pdgNum[pythia.event[ptstdau[hh]].id()]]<<" "<<pdgNum[pythia.event[ptstdau[hh]].id()]<<" "<<pythia.event[ptstdau[hh]].id()<<std::endl;
 	      if( (pdgNum[pythia.event[ptstdau[hh]].id()]<0)||
-                  (pdgNum[pythia.event[ptstdau[hh]].id()]>npart-1)) {
-		  std::cout<<"unknow stable "<<pythia.event[ptstdau[hh]].id()<<std::endl;
+                  (pdgNum[pythia.event[ptstdau[hh]].id()]>=npart-1)) {
+		  std::cout<<"unknown stable "<<pythia.event[ptstdau[hh]].id()<<std::endl;
 	    } else {
 	      hdaupt->Fill(pythia.event[ptstdau[hh]].pT());
-              hdecays2->Fill(partNames[pdgNum[pythia.event[ptstdau[hh]].id()]],1);
+	      hdecays2->Fill(partNames[pdgNum[abs(pythia.event[ptstdau[hh]].id())]],1);
 	    }
 	    }
 
@@ -869,7 +907,17 @@ for(int hh=0;hh<10000000;hh++) {
       }
     }
 
-
+    
+    //if(ihepMCout>0) {  // write hepMCoutput file
+    //  HepMC::GenEvent* hepmcevt = new HepMC::GenEvent();
+    //  ToHepMC.fill_next_event( pythia, hepmcevt );
+    //
+      // Write the HepMC event to file. Done with it.                                               //                     
+    //  ascii_io << hepmcevt;
+    //  delete hepmcevt;
+    //
+    //}
+    
 
 
   }  // end loop over events
@@ -933,7 +981,7 @@ for(int hh=0;hh<10000000;hh++) {
   hjet4pT->Write();
   hjety->Write();
   hjetphi->Write();
-
+  
   hdecays->LabelsDeflate();
   hdecays->LabelsOption("v");
   hdecays->LabelsOption("a");
@@ -944,7 +992,7 @@ for(int hh=0;hh<10000000;hh++) {
   hdecays2->LabelsOption("v");
   hdecays2->LabelsOption("a");
   hdecays2->Write();
-
+  
   hdaupt->Write();
   hmapt->Write();
 
