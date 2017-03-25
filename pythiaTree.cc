@@ -462,23 +462,15 @@ std::cout<<"now making stable daughters"<<std::endl;
 	    for(int hh=0;hh<isize;hh++) {
 	      // make a list of the stable one
 	      if(pythia.event[ptalldau[hh]].daughter1()==0) {
-		ptstdau.push_back(ptalldau[hh]);
-		/*
- std::cout<<" checking pdgName and pdgNum"<<std::endl;
-for(int hh=0;hh<1000;hh++) {
-  got = pdgName.find(hh);
-  got2 = pdgNum.find(hh);
-  std::cout<<hh<<" name  "<<(*got).first<<" "<<(*got).second<<std::endl;
-  std::cout<<hh<<" num  "<<(*got2).first<<" "<<(*got2).second<<std::endl;
-  std::cout<<hh<<" partNames is "<<partNames[(*got2).second]<<std::endl;
-  std::cout<<hh<<" another try "<<pdgNum[hh]<<" "<<partNames[pdgNum[hh]]<<std::endl;
- }
-		*/
- int ihaha2 = ((pythia.event[ptalldau[hh]]).id());
- if(ihaha2<0) ihaha2*=-1;
- int ihaha =pdgNum[ihaha2];
-		if(idbg>1)  std::cout<<" adding stable particle "<<ptalldau[hh]<<" with id "<<ihaha2<<" and pdgNum "<<ihaha <<" "<<partNames[ihaha]<<
-std::endl;
+                 std::vector<int>::iterator got3;
+		 got3 = std::find(ptstdau.begin(),ptstdau.end(),ptalldau[hh]);
+		 if(got3==ptstdau.end()) {
+                   ptstdau.push_back(ptalldau[hh]);
+                   int ihaha2 = ((pythia.event[ptalldau[hh]]).id());
+                   if(ihaha2<0) ihaha2*=-1;
+                   int ihaha =pdgNum[ihaha2];
+		if(idbg>1)  std::cout<<" adding stable particle "<<ptalldau[hh]<<" with id "<<ihaha2<<" and pdgNum "<<ihaha <<" "<<partNames[ihaha]<<std::endl;
+		 }
 	      }
 	    }
 	    isize = ptstdau.size();
