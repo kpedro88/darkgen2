@@ -5,7 +5,7 @@
 #include "TH1F.h"
 
 int dolog=0;
-void daupt() 
+void nfstdau() 
 { 
   TFile *f1 = new TFile("res.root");
   TFile *f2 = new TFile("nonres.root");  
@@ -68,8 +68,8 @@ void daupt()
   
   int n_ = 2;
   
-  float x1_l = 0.75;
-  float y1_l = 0.60;
+  float x1_l = 1.1;
+  float y1_l = 0.80;
   
   float dx_l = 0.60;
   float dy_l = 0.1;
@@ -77,18 +77,18 @@ void daupt()
   float y0_l = y1_l-dy_l;
   
  TLegend *lgd = new TLegend(x0_l,y0_l,x1_l, y1_l); 
-  lgd->SetBorderSize(0); lgd->SetTextSize(0.04); lgd->SetTextFont(62); lgd->SetFillColor(0);
+  lgd->SetBorderSize(0); lgd->SetTextSize(0.03); lgd->SetTextFont(62); lgd->SetFillColor(0);
 
 
   
 
-  TH1F *A_pt = static_cast<TH1F*>(f1->Get("hdaupt")->Clone());
+  TH1F *A_pt = static_cast<TH1F*>(f1->Get("hnfstdau")->Clone());
   A_pt->SetDirectory(0);
   float aaA = A_pt->GetEntries();
 
   A_pt->Scale(1./aaA);
 
-  A_pt->GetYaxis()->SetTitle("percentage daughters  per 2 GeV");  
+  A_pt->GetYaxis()->SetTitle("percent per final state daughter mult");  
   A_pt->GetYaxis()->SetTitleSize(0.05);  
 
 
@@ -100,7 +100,7 @@ void daupt()
 
 
 
-  TH1F *B_pt = static_cast<TH1F*>(f2->Get("hdaupt")->Clone());
+  TH1F *B_pt = static_cast<TH1F*>(f2->Get("hnfstdau")->Clone());
   B_pt->SetDirectory(0);
   float aaB = B_pt->GetEntries();
 

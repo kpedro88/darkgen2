@@ -40,9 +40,9 @@ using namespace std;
 using namespace Pythia8;
 
 
-Int_t idsp=0;
-Int_t idbg=0;
-//Int_t ihepMCout=0; 
+int idsp=0;
+int idbg=0;
+//int ihepMCout=0; 
 
 int nCharged, nNeutral, nTot;
 
@@ -202,6 +202,9 @@ for(int hh=0;hh<1000;hh++) {
 
   TH1F *hdaupt = new TH1F("hdaupt"," pT of stable daughters",50,0.,10.);
   TH1F *hmapt = new TH1F("hmapt"," pT of mother",50,0.,100.);
+  TH1F *hnfstdau = new TH1F("hnfstdau"," number of stable daughters ",50,0.,50.);
+  TH1F *hnfrstdau = new TH1F("hnfrstdau"," number of first daughters dark pi",50,0.,50.);
+
   
   TH1F *hdecays = new TH1F("hdecays"," decays ",3,0,3);
   hdecays->SetStats(0);
@@ -232,19 +235,21 @@ for(int hh=0;hh<1000;hh++) {
   // Begin event loop. Generate event; skip if generation aborted.
 
 
-  Int_t ndpis,ndqs,ndq71,ndqnm,m1,m2,ipid,dq1,dq2,d1,d2;
-  Int_t dq711,dq712;
+  int ndpis,ndqs,ndq71,ndqnm,m1,m2,ipid,dq1,dq2,d1,d2;
+  int dq711,dq712;
 
 
-  Float_t dq1pT,dq1y,dq1phi;
-  Float_t dq2pT,dq2y,dq2phi;
-  Float_t d1pT,d1y,d1phi;
-  Float_t d2pT,d2y,d2phi;
-  Float_t dq1dR,dq2dR,d1dR,d2dR,aaatmp,aaatmp2;
-  Int_t dq1sj,dq2sj,d1sj,d2sj;
+  float dq1pT,dq1y,dq1phi;
+  float dq2pT,dq2y,dq2phi;
+  float d1pT,d1y,d1phi;
+  float d2pT,d2y,d2phi;
+  float dq1dR,dq2dR,d1dR,d2dR,aaatmp,aaatmp2;
+  int dq1sj,dq2sj,d1sj,d2sj;
+  int nfstdau; 
+  int nfrstdau; 
 
-  Int_t ndpismax=100;
-  Int_t ptdpis[100];
+  int ndpismax=100;
+  int ptdpis[100];
 
   cout<<"test test"<<endl;
 
@@ -322,18 +327,18 @@ for(int hh=0;hh<1000;hh++) {
       // look at all HV particles and make list of dark pions with stable daughters and put in ptdpise
       if(abs(pythia.event[i].id())>4900000) {
 	int idHV = pythia.event[i].id();
-	Float_t mHV = pythia.event[i].m();
-	Float_t qHV = pythia.event[i].charge();
-        Float_t d0HV = sqrt(pow(pythia.event[i].xProd(),2)+pow(pythia.event[i].yProd(),2));
-	Float_t decayLHV = sqrt(pow(pythia.event[i].xProd(),2)+pow(pythia.event[i].yProd(),2)+pow(pythia.event[i].zProd(),2));
-	Float_t massHV = sqrt( pow(pythia.event[i].e(),2) - pow(pythia.event[i].pAbs(),2));
-	Float_t gammaHV = pythia.event[i].e()/ massHV;
-	Float_t betaHV = pythia.event[i].pAbs()/pythia.event[i].e();
-	Float_t decaypT = decayLHV/betaHV/3e10/gammaHV;
-	Int_t ndauHV=0; 
+	float mHV = pythia.event[i].m();
+	float qHV = pythia.event[i].charge();
+        float d0HV = sqrt(pow(pythia.event[i].xProd(),2)+pow(pythia.event[i].yProd(),2));
+	float decayLHV = sqrt(pow(pythia.event[i].xProd(),2)+pow(pythia.event[i].yProd(),2)+pow(pythia.event[i].zProd(),2));
+	float massHV = sqrt( pow(pythia.event[i].e(),2) - pow(pythia.event[i].pAbs(),2));
+	float gammaHV = pythia.event[i].e()/ massHV;
+	float betaHV = pythia.event[i].pAbs()/pythia.event[i].e();
+	float decaypT = decayLHV/betaHV/3e10/gammaHV;
+	int ndauHV=0; 
 	if(pythia.event[i].daughter1()!=0) ndauHV=pythia.event[i].daughter2()-pythia.event[i].daughter1()+1;
 	if(idbg>8) std::cout<<" for particle "<<i<<" number of daughters is "<<ndauHV<<std::endl;
-	Int_t HV = (idHV/abs(idHV))*(abs(idHV)-4900000);
+	int HV = (idHV/abs(idHV))*(abs(idHV)-4900000);
 	hppidHV->Fill( HV);  // get the type of the particle
         hmassHV->Fill( HV,mHV );
         hqHV->Fill( HV,qHV );
@@ -357,24 +362,24 @@ for(int hh=0;hh<1000;hh++) {
 	  //          if( abs(idHV)==4900113) {  // dark rho
 	  //	    cout<<"danger danger will robinson dark rho number daughters is "<<ndauHV<<endl;
 	  //  	    for(int ij=0; ij<ndauHV; ++ij) {
-	  //	      Int_t iii = pythia.event[i].daughter1()+ij;
+	  //	      int iii = pythia.event[i].daughter1()+ij;
 	  //	      cout<<"daughter "<<ij<<" has id "<<pythia.event[iii].id()<<endl;
 	  //	      cout<<"mother momentum is "<<pythia.event[i].px()<<","<<pythia.event[i].py()<<","<<pythia.event[i].pz()<<endl;
 	  //	      cout<<"daught momentum is "<<pythia.event[iii].px()<<","<<pythia.event[iii].py()<<","<<pythia.event[iii].pz()<<endl;
 	  //	    }
 	  //          }
 
-	  Int_t nstable=0;
-	  Int_t nHVdau=0;
+	  int nstable=0;
+	  int nHVdau=0;
 	  for(int ij=0; ij<ndauHV; ++ij) {  // loop over all the HV particle's daughters
-	    Int_t iii = pythia.event[i].daughter1()+ij;
-	    Int_t idauid = abs(pythia.event[iii].id());
+	    int iii = pythia.event[i].daughter1()+ij;
+	    int idauid = abs(pythia.event[iii].id());
 	    if(idauid>4900000) nHVdau++;
 	  
 
 	    if(pythia.event[iii].isFinal()) {  // for stable daughters of HV particles
-	      Float_t d0dHV = sqrt(pow(pythia.event[iii].xProd(),2)+pow(pythia.event[iii].yProd(),2));
-	      Float_t L0DHV = sqrt(pow(pythia.event[iii].xProd(),2)+pow(pythia.event[iii].yProd(),2)+pow(pythia.event[iii].zProd(),2) );
+	      float d0dHV = sqrt(pow(pythia.event[iii].xProd(),2)+pow(pythia.event[iii].yProd(),2));
+	      float L0DHV = sqrt(pow(pythia.event[iii].xProd(),2)+pow(pythia.event[iii].yProd(),2)+pow(pythia.event[iii].zProd(),2) );
 
 	      if(nstable==0) { // if his a particle that is stable (first one)
 		hnsdau->Fill(pythia.event[i].daughter2()-pythia.event[i].daughter1());
@@ -406,18 +411,19 @@ for(int hh=0;hh<1000;hh++) {
 	  // for dark pions that have at least one stable daughter, make a pretty plot
 	  if(nstable>0&& abs(pythia.event[i].id())==4900111) {
 	  for(int ij=0; ij<ndauHV; ++ij) {  // loop over all the HV particle's daughters
-	    Int_t iii = pythia.event[i].daughter1()+ij;
+	    int iii = pythia.event[i].daughter1()+ij;
 	    hdecays->Fill(partNames[pdgNum[pythia.event[iii].id()]],1);
 	  }  // end loop over HV daughters
 	  }  //end if dark pion with stable daughters
 	  // find all the daughters 
 	  vector<int> ptalldau;
 	  if(nHVdau==0) {  // if none of the daughters are another HV particle
+	    if(abs(idHV)==4900111) hnfrstdau->Fill( ndauHV );
 	    if(idbg>1) 
 	    cout<<" making decay tree for particle "<<i<<" with number of daughters "<<ndauHV<<" and type "<<pythia.event[i].id()<<endl;
 	    hmapt->Fill(pythia.event[i].pT());
 	    for(int ij=0; ij<ndauHV; ++ij) {  // loop over all the HV particle's daughters
-	      Int_t iii = pythia.event[i].daughter1()+ij;
+	      int iii = pythia.event[i].daughter1()+ij;
 	      	      if(idbg>1) 
 	      std::cout<<"     adding particle "<<iii<<" with id "<<pythia.event[iii].id()<<endl;
 	      ptalldau.push_back(iii);
@@ -459,6 +465,7 @@ std::cout<<"now making stable daughters"<<std::endl;
 
 	    vector<int> ptstdau;
 	    isize = ptalldau.size();
+	    nfstdau=0;
 	    for(int hh=0;hh<isize;hh++) {
 	      // make a list of the stable one
 	      if(pythia.event[ptalldau[hh]].daughter1()==0) {
@@ -466,6 +473,7 @@ std::cout<<"now making stable daughters"<<std::endl;
 		 got3 = std::find(ptstdau.begin(),ptstdau.end(),ptalldau[hh]);
 		 if(got3==ptstdau.end()) {
                    ptstdau.push_back(ptalldau[hh]);
+		   nfstdau++;
                    int ihaha2 = ((pythia.event[ptalldau[hh]]).id());
                    if(ihaha2<0) ihaha2*=-1;
                    int ihaha =pdgNum[ihaha2];
@@ -473,6 +481,9 @@ std::cout<<"now making stable daughters"<<std::endl;
 		 }
 	      }
 	    }
+            hnfstdau->Fill( nfstdau );
+ 
+
 	    isize = ptstdau.size();
 	    for(int hh=0;hh<isize;hh++) {
 	      //std::cout<<"check "<<partNames[pdgNum[pythia.event[ptstdau[hh]].id()]]<<" "<<pdgNum[pythia.event[ptstdau[hh]].id()]<<" "<<pythia.event[ptstdau[hh]].id()<<std::endl;
@@ -528,7 +539,6 @@ std::cout<<"now making stable daughters"<<std::endl;
     hndqnm->Fill( ndqnm );
 
 
-
     if(idbg>0) {
       cout<<"will robinson"<<endl;
       cout<<"number dark quarks without dark quark mothers is "<<ndqnm<<endl;
@@ -547,7 +557,7 @@ std::cout<<"now making stable daughters"<<std::endl;
       cout<<" number of dark pions is "<<ndpis<<endl;
       cout<<" id mother1 mother2 daughter 1 daughter2 pt y phi"<<endl;
       for(int jj=0;jj<ndpis;++jj) {
-	Int_t kk = ptdpis[jj];
+	int kk = ptdpis[jj];
 	 cout<<kk<<" "<<pythia.event[kk].id()<<" "<<pythia.event[kk].mother1()<<" "<<pythia.event[kk].mother2()<<" "<<
 	  pythia.event[kk].daughter1()<<" "<<pythia.event[kk].daughter2()<<" "<<
         pythia.event[kk].pT()<<" "<<pythia.event[kk].y()<<" "<<pythia.event[kk].phi()<<" "<<endl;
@@ -557,10 +567,10 @@ std::cout<<"now making stable daughters"<<std::endl;
 
 
     // compare code 71 dark quarks to initial dark quarks
-    Float_t a1=abs(pythia.event[dq1].phi()-pythia.event[dq711].phi());
+    float a1=abs(pythia.event[dq1].phi()-pythia.event[dq711].phi());
     if(a1>3.14159) a1=6.2832-a1;
     a1=sqrt(pow(pythia.event[dq1].y()-pythia.event[dq711].y(),2)+pow(a1,2));
-    Float_t b1=abs(pythia.event[dq1].phi()-pythia.event[dq712].phi());
+    float b1=abs(pythia.event[dq1].phi()-pythia.event[dq712].phi());
     if(b1>3.14159) b1=6.2832-b1;
     b1=sqrt(pow(pythia.event[dq1].y()-pythia.event[dq712].y(),2)+pow(b1,2));
     if(a1<b1) {
@@ -608,7 +618,7 @@ std::cout<<"now making stable daughters"<<std::endl;
     d2phi=pythia.event[d2].phi();
 
     // delta r between dark quark and d quark
-    //    Float_t bbb=99999.;
+    //    float bbb=99999.;
     // aaatmp=abs(dq1phi-aSlowJet.phi(ijet));
     //  if(aaatmp>3.14159) aaatmp=6.2832-aaatmp;
     //  aaatmp=sqrt(pow(dq1y-aSlowJet.y(ijet),2)+pow(aaatmp,2));
@@ -711,8 +721,8 @@ std::cout<<"now making stable daughters"<<std::endl;
 
       hdqvjet->Fill(pythia.event[dq1].pT(),aSlowJet.pT(dq1sj));
       hdqvjet->Fill(pythia.event[dq2].pT(),aSlowJet.pT(dq2sj));
-      Float_t Del1 = (pythia.event[dq1].pT()-aSlowJet.pT(dq1sj))/aSlowJet.pT(dq1sj);
-      Float_t Del2 = (pythia.event[dq2].pT()-aSlowJet.pT(dq2sj))/aSlowJet.pT(dq2sj);
+      float Del1 = (pythia.event[dq1].pT()-aSlowJet.pT(dq1sj))/aSlowJet.pT(dq1sj);
+      float Del2 = (pythia.event[dq2].pT()-aSlowJet.pT(dq2sj))/aSlowJet.pT(dq2sj);
       //      if( (Del1>0.5&&aSlowJet.pT(dq1sj)<60) || (Del2>0.5&&aSlowJet.pT(dq2sj)<60) ) {
       //	cout<<"danger danger will robinson Del1 Del2 are "<<Del1<<" "<<Del2<<endl;
       //      }
@@ -724,7 +734,7 @@ std::cout<<"now making stable daughters"<<std::endl;
 
 
     // another loop over slow jets to make plots about dark quarks matched to them
-    Int_t njetdpi=0;
+    int njetdpi=0;
     if(idbg>0) cout<<" information about dark pions per jet"<<endl;
     for (int ijet =0; ijet< aSlowJet.sizeJet(); ++ijet) {
 	if( (ijet==d1sj) || (ijet==d2sj) ) {
@@ -751,7 +761,7 @@ std::cout<<"now making stable daughters"<<std::endl;
 
     // find delta R between dark pions and dark quarts
     for (int ii =0; ii< ndpis; ++ii) {
-      Int_t ipt = ptdpis[ii];
+      int ipt = ptdpis[ii];
       // find delta R to dq1
       aaatmp=abs(dq1phi-pythia.event[ipt].phi());
       if(aaatmp>3.14159) aaatmp=6.2832-aaatmp;
@@ -771,12 +781,12 @@ std::cout<<"now making stable daughters"<<std::endl;
     // dark quark 1
     //    cout<<endl;
     if(idbg>0) cout<<"beginning dark quark 1 "<<dq1<<endl;
-    Int_t ipt = dq1;
+    int ipt = dq1;
     //get number of daughters
     vector<int> dpts1;
     vector<bool> indq1(pythia.event.size());
     indq1[ipt]=true;
-    Int_t nd = pythia.event[ipt].daughter2()-pythia.event[ipt].daughter1()+1;
+    int nd = pythia.event[ipt].daughter2()-pythia.event[ipt].daughter1()+1;
     for(int kk=0;kk<nd;++kk){
       indq1[pythia.event[ipt].daughter1()+kk]=true;
       dpts1.push_back(pythia.event[ipt].daughter1()+kk);
@@ -856,14 +866,14 @@ std::cout<<"now making stable daughters"<<std::endl;
 
 
     //calculate trigger HT
-    Float_t trigHT=0.;
+    float trigHT=0.;
     for (int ijet =0; ijet< trigSlowJet.sizeJet(); ++ijet) {
       trigHT=trigHT+trigSlowJet.pT(ijet);
     }
     htright->Fill(trigHT);
 
     // event selection
-    Int_t icut =0;
+    int icut =0;
     bool pass = true;
 
     hcutflow->Fill(icut+0.5); icut++;// all events
@@ -973,6 +983,7 @@ std::cout<<"now making stable daughters"<<std::endl;
   hjet4pT->Write();
   hjety->Write();
   hjetphi->Write();
+
   
   hdecays->LabelsDeflate();
   hdecays->LabelsOption("v");
@@ -987,6 +998,8 @@ std::cout<<"now making stable daughters"<<std::endl;
   
   hdaupt->Write();
   hmapt->Write();
+  hnfstdau->Write();
+  hnfrstdau->Write();
 
   delete outFile;
 
