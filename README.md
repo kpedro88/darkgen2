@@ -1,9 +1,11 @@
 # emg_delphes
 
+first time, do 
+ln -s ../delphes/* .
 
 source /cvmfs/sft.cern.ch/lcg/views/LCG_87/x86_64-slc6-gcc49-opt/setup.csh
 root -l
-   .X examples/Example1.C("../delphes/haha.root");
+   .X emgD.C("../delphes/haha.root");
 
 
 
