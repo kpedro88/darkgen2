@@ -12,9 +12,9 @@ PYTHIA8 := /data/users/eno/pythia8224/
 EX           := hist tree pythiaTree
 EXE          := $(addsuffix .exe,$(EX))
 PYTHIA8      ?= $(PWD)/..
-STATICLIB    := $(PYTHIA8)/lib/libpythia8.a
+STATICLIB    := $(PYTHIA8)/lib/libpythia8.a $(PYTHIA8)/libHepMC.a
 SHAREDLIB    := $(PYTHIA8)/lib/libpythia8.$(SHAREDSUFFIX)
-DICTCXXFLAGS := -I$(PYTHIA8)/include 
+DICTCXXFLAGS := -I$(PYTHIA8)/include -I$(PYTHIA8)
 ROOTCXXFLAGS := $(DICTCXXFLAGS) $(shell root-config --cflags)
 
 # Libraries to include if GZIP support is enabled
@@ -24,9 +24,9 @@ endif
 
 # LDFLAGS1 for static library, LDFLAGS2 for shared library
 LDFLAGS1 := $(shell root-config --ldflags --glibs) \
-  -L$(PYTHIA8)/lib/ -lpythia8  $(LIBGZIP)
+  -L$(PYTHIA8)/lib/ -lpythia8  -L$(PYTHIA8) -lHepMC $(LIBGZIP)
 LDFLAGS2 := $(shell root-config --ldflags --glibs) \
-  -L$(PYTHIA8)/lib -lpythia8  $(LIBGZIP)
+  -L$(PYTHIA8)/lib -lpythia8  -L$(PYTHIA8) -lHepMC $(LIBGZIP)
 
 # Default target; make examples (but not shared dictionary)
 all: $(EX)

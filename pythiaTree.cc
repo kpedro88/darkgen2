@@ -21,7 +21,7 @@ using namespace std;
 
 // Header file to access Pythia 8 program elements.
 #include "Pythia8/Pythia.h"
-//#include "Pythia8Plugins/HepMC2.h"
+#include "Pythia8Plugins/HepMC2.h"
 
 // ROOT, for histogramming.
 #include "TH1.h"
@@ -42,7 +42,7 @@ using namespace Pythia8;
 
 int idsp=0;
 int idbg=0;
-//int ihepMCout=0; 
+int ihepMCout=1; 
 
 int nCharged, nNeutral, nTot;
 
@@ -69,11 +69,9 @@ int main(int argc, char* argv[]) {
 
 
   // create a file for hepMC output if needed
-
-  //  if(ihepMCout>0) {
-  //  HepMC::Pythia8ToHepMC ToHepMC;
-  //  HepMC::IO_GenEvent ascii_io("hepmc.out", std::ios::out);
-  // }
+  //ihepMCout
+    HepMC::Pythia8ToHepMC ToHepMC;
+    HepMC::IO_GenEvent ascii_io("hepmc.out", std::ios::out);
 
 
 
@@ -910,15 +908,15 @@ std::cout<<"now making stable daughters"<<std::endl;
     }
 
     
-    //if(ihepMCout>0) {  // write hepMCoutput file
-    //  HepMC::GenEvent* hepmcevt = new HepMC::GenEvent();
-    //  ToHepMC.fill_next_event( pythia, hepmcevt );
-    //
+    if(ihepMCout>0) {  // write hepMCoutput file
+      HepMC::GenEvent* hepmcevt = new HepMC::GenEvent();
+      ToHepMC.fill_next_event( pythia, hepmcevt );
+    
       // Write the HepMC event to file. Done with it.                                               //                     
-    //  ascii_io << hepmcevt;
-    //  delete hepmcevt;
-    //
-    //}
+      ascii_io << hepmcevt;
+      delete hepmcevt;
+    
+    }
     
 
 
