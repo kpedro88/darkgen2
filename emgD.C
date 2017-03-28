@@ -19,7 +19,7 @@ R__LOAD_LIBRARY(libDelphes)
 
 struct MyPlots
 {
-  TH1 *fJetPT[2];
+  TH1 *fJetPT[4];
   TH1 *fMissingET;
   TH1 *fElectronPT;
 };
@@ -42,27 +42,45 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
   plots->fJetPT[0] = result->AddHist1D(
     "jet_pt_0", "leading jet P_{T}",
     "jet P_{T}, GeV/c", "number of jets",
-    50, 0.0, 100.0);
+    100, 0.0, 1000.0);
 
   plots->fJetPT[1] = result->AddHist1D(
     "jet_pt_1", "2nd leading jet P_{T}",
     "jet P_{T}, GeV/c", "number of jets",
-    50, 0.0, 100.0);
+    100, 0.0, 1000.0);
+
+
+  plots->fJetPT[2] = result->AddHist1D(
+    "jet_pt_2", "3rd leading jet P_{T}",
+    "jet P_{T}, GeV/c", "number of jets",
+    100, 0.0, 1000.0);
+
+
+  plots->fJetPT[3] = result->AddHist1D(
+    "jet_pt_3", "4th leading jet P_{T}",
+    "jet P_{T}, GeV/c", "number of jets",
+    100, 0.0, 1000.0);
 
   plots->fJetPT[0]->SetLineColor(kRed);
   plots->fJetPT[1]->SetLineColor(kBlue);
+  plots->fJetPT[2]->SetLineColor(kGreen);
+  plots->fJetPT[3]->SetLineColor(kBlack);
 
   // book 1 stack of 2 histograms
 
   stack = result->AddHistStack("jet_pt_all", "1st and 2nd jets P_{T}");
   stack->Add(plots->fJetPT[0]);
   stack->Add(plots->fJetPT[1]);
+  stack->Add(plots->fJetPT[2]);
+  stack->Add(plots->fJetPT[3]);
 
   // book legend for stack of 2 histograms
 
   legend = result->AddLegend(0.72, 0.86, 0.98, 0.98);
   legend->AddEntry(plots->fJetPT[0], "leading jet", "l");
   legend->AddEntry(plots->fJetPT[1], "second jet", "l");
+  legend->AddEntry(plots->fJetPT[2], "third jet", "l");
+  legend->AddEntry(plots->fJetPT[3], "fourth jet", "l");
 
   // attach legend to stack (legend will be printed over stack in .eps file)
 
@@ -78,22 +96,25 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
   plots->fMissingET = result->AddHist1D(
     "missing_et", "Missing E_{T}",
     "Missing E_{T}, GeV", "number of events",
-    60, 0.0, 30.0);
+    100, 0.0, 1000.0);
 
   // book general comment
 
+  /*
   comment = result->AddComment(0.64, 0.86, 0.98, 0.98);
   comment->AddText("demonstration plot");
-  comment->AddText("produced by Example2.C");
+  comment->AddText("emg");
 
   // attach comment to single histograms
 
   result->Attach(plots->fJetPT[0], comment);
   result->Attach(plots->fJetPT[1], comment);
   result->Attach(plots->fElectronPT, comment);
+  */
 
   // show histogram statisics for MissingET
   plots->fMissingET->SetStats();
+  plots->fElectronPT->SetStats();
 }
 
 //------------------------------------------------------------------------------
@@ -108,7 +129,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 
   cout << "** Chain contains " << allEntries << " events" << endl;
 
-  Jet *jet[2];
+  Jet *jet[4];
   MissingET *met;
   Electron *electron;
 
@@ -122,14 +143,18 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
     // Load selected branches with data from specified event
     treeReader->ReadEntry(entry);
 
-    // Analyse two leading jets
-    if(branchJet->GetEntriesFast() >= 2)
+    // Analyse four leading jets
+    if(branchJet->GetEntriesFast() >= 4)
     {
       jet[0] = (Jet*) branchJet->At(0);
       jet[1] = (Jet*) branchJet->At(1);
+      jet[2] = (Jet*) branchJet->At(2);
+      jet[3] = (Jet*) branchJet->At(3);
 
       plots->fJetPT[0]->Fill(jet[0]->PT);
       plots->fJetPT[1]->Fill(jet[1]->PT);
+      plots->fJetPT[2]->Fill(jet[2]->PT);
+      plots->fJetPT[3]->Fill(jet[3]->PT);
     }
 
     // Analyse missing ET
@@ -145,6 +170,10 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
       electron = (Electron*) branchElectron->At(i);
       plots->fElectronPT->Fill(electron->PT);
     }
+
+    //find emerging jets
+
+
   }
 }
 
