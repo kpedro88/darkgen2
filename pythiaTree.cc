@@ -136,8 +136,8 @@ for(int hh=0;hh<1000;hh++) {
 for(int hh=0;hh<1000;hh++) {
   got = pdgName.find(hh);
   got2 = pdgNum.find(hh);
-  std::cout<<hh<<" name  "<<(*got).first<<" "<<(*got).second<<std::endl;
-  std::cout<<hh<<" num  "<<(*got2).first<<" "<<(*got2).second<<std::endl;
+  //  std::cout<<hh<<" name  "<<(*got).first<<" "<<(*got).second<<std::endl;
+  //std::cout<<hh<<" num  "<<(*got2).first<<" "<<(*got2).second<<std::endl;
  }
 
 
