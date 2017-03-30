@@ -8,6 +8,8 @@ root -l examples/Example2.C'("delphes_output.root")'
 #include "TH1.h"
 #include "TSystem.h"
 #include <stdlib.h>
+#include <iostream>
+#include <fstream>
 
 #ifdef __CLING__
 R__LOAD_LIBRARY(libDelphes)
@@ -27,6 +29,10 @@ float PT3CUT = 200;
 float PT4CUT = 100;
 float JETETA = 2;
 float ALPHAMAXCUT = 0.2;
+
+  std::ofstream myfile;
+
+
 
 //------------------------------------------------------------------------------
 
@@ -151,15 +157,19 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
 
 void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 {
+  TClonesArray *branchParticle = treeReader->UseBranch("Particle");
   TClonesArray *branchTRK = treeReader->UseBranch("Track");
   TClonesArray *branchJet = treeReader->UseBranch("Jet");
   TClonesArray *branchMissingET = treeReader->UseBranch("MissingET");
   TClonesArray *branchScalarHT = treeReader->UseBranch("ScalarHT");
 
+
+
   Long64_t allEntries = treeReader->GetEntries();
 
   cout << "** Chain contains " << allEntries << " events" << endl;
 
+  GenParticle *particle;
   Track *trk;
   Jet *jet;
   MissingET *met;
@@ -172,8 +182,8 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
   // Loop over all events
   for(entry = 0; entry < allEntries; ++entry)
   {
-    if(idbg>0) std::cout<<std::endl;
-    if(idbg>0) std::cout<<"event "<<entry<<std::endl;
+    if(idbg>0) myfile<<std::endl;
+    if(idbg>0) myfile<<"event "<<entry<<std::endl;
     // Load selected branches with data from specified event
     treeReader->ReadEntry(entry);
 
@@ -197,7 +207,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
     float allpT,cutpT,dR;
     for(int i=0;i<njet;i++) {
       jet = (Jet*) branchJet->At(i);
-      if(idbg>0) std::cout<<"jet with pt of "<<jet->PT<<std::endl;
+      if(idbg>0) myfile<<"jet "<<i<<"  with pt, eta, phi of "<<jet->PT<<" "<<jet->Eta<<" "<<jet->Phi<<std::endl;
       plots->fJetPT->Fill(jet->PT);
       alphaMax[i]=1.;
       D0Max[i]=0.;
@@ -207,20 +217,26 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
         trk = (Track*) branchTRK->At(j);
 	dR=DeltaR(jet->Eta,jet->Phi,trk->Eta,trk->Phi);
 	if(dR<ConeSize) {
-	  if(idbg>0) std::cout<<"   contains track "<<j<<" with pt of "<<trk->PT<<" d0 of "<<trk->D0<<" and D0error of "<<trk->ErrorD0<<std::endl;
+	  if(i<4) {
+	    if(idbg>0) myfile<<"   contains track "<<j<<" with pt, eta, phi of "<<trk->PT<<" "<<trk->Eta<<" "<<trk->Phi<<" d0 of "<<trk->D0<<
+		       //" and D0error of "<<trk->ErrorD0<<
+std::endl;
+	    particle = (GenParticle*) trk->Particle.GetObject();
+	    if(idbg>0) myfile<<"     which matches to get particle with XY of "<<particle->X<<" "<<particle->Y<<std::endl;
 	  if((trk->D0)>D0Max[i]) D0Max[i]=(trk->D0);
 	  allpT+=trk->PT;
 	  //	  if((trk->ErrorD0)>0) {  // this does not seem to be implemented
 	  //	    if(((trk->D0)/(trk->ErrorD0))<D0SigCut) {
-	    if((trk->D0)<D0SigCut) {
+	  if(fabs((trk->D0))<D0SigCut) {
 	      cutpT+=trk->PT;
 	    }
 	      //}
-	}
+	  }}
       }
       if(allpT>0) {
 	alphaMax[i]=cutpT/allpT;
       }
+      if(idbg>0) myfile<<"alpha max is "<<alphaMax[i]<<std::endl;
     }
 
 
@@ -247,7 +263,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
       plots->fJetAM->Fill(alphaMax[i]);
       if(alphaMax[i]<ALPHAMAXCUT) {
 	nalpha+=1;
-	if(idbg>0) std::cout<<" jet "<<i<<" passes alphamax cut with alphamax of "<<alphaMax[i]<<std::endl;
+	if(idbg>0) myfile<<" jet "<<i<<" passes alphamax cut with alphamax of "<<alphaMax[i]<<std::endl;
       }
     }
 
@@ -271,7 +287,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
           plots->Count->Fill("PT4CUT",1);
 	  if(nalpha>1) {
           plots->Count->Fill("AM",1);
-	  if(idbg>0) std::cout<<" event passes all cuts"<<std::endl;
+	  if(idbg>0) myfile<<" event passes all cuts"<<std::endl;
 	  }
 	}}}}
       }
@@ -313,6 +329,8 @@ void emgD(const char *inputFile)
 
   MyPlots *plots = new MyPlots;
 
+  myfile.open("debug.txt");
+
   BookHistograms(result, plots);
 
   AnalyseEvents(treeReader, plots);
@@ -320,6 +338,8 @@ void emgD(const char *inputFile)
   PrintHistograms(result, plots);
 
   result->Write("results.root");
+
+  myfile.close();
 
   cout << "** Exiting..." << endl;
 
