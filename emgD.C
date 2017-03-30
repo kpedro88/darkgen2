@@ -46,7 +46,7 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
   plots->fnTRK = result->AddHist1D(
     "nTRK", "number of tracks",
     "number of tracks", "number of events",
-    50, 0.0, 100.0);
+    500, 0.0, 500.0);
 
   plots->ftrkPT = result->AddHist1D(
     "track_pt", "track P_{T}",
@@ -59,7 +59,7 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
   plots->fnJet = result->AddHist1D(
     "nJet", "number of jets",
     "number of jets", "number of events",
-    50, 0.0, 100.0);
+    50, 0.0, 50.0);
 
 
   plots->fJetPT[0] = result->AddHist1D(
@@ -173,7 +173,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 
     // plots for jets
     int njet = branchJet->GetEntriesFast();
-    plots->fnTRK->Fill(njet);
+    plots->fnJet->Fill(njet);
 
     if(njet >= 4)  // for events with at least 4 jets
     {
@@ -207,7 +207,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 
     // Analyse tracks
     int ntrk = branchTRK->GetEntriesFast();
-    plots->fnJet->Fill(ntrk);
+    plots->fnTRK->Fill(ntrk);
     for(int i=0;i<ntrk;i++ ) {
       trk = (Track*) branchTRK->At(i);
       plots->ftrkPT->Fill(trk->PT);
