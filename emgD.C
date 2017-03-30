@@ -195,9 +195,12 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
       prt = (GenParticle*) branchParticle->At(i);
       int id=(prt->PID);
       if(idbg>0) {
-	if(abs(id)>4900000) {
-	myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt of "<<prt->PT<<std::endl;
-      }
+	if(abs(id)==4900001) {
+	  myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt of "<<prt->PT<<std::endl;
+        }
+	if(abs(id)==1) {
+	  myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt of "<<prt->PT<<std::endl;
+        }
       }
     }
 
