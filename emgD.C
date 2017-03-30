@@ -169,7 +169,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 
   cout << "** Chain contains " << allEntries << " events" << endl;
 
-  GenParticle *particle;
+  GenParticle *prt;
   Track *trk;
   Jet *jet;
   MissingET *met;
@@ -186,6 +186,20 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
     if(idbg>0) myfile<<"event "<<entry<<std::endl;
     // Load selected branches with data from specified event
     treeReader->ReadEntry(entry);
+
+
+
+    // Analyse gen particles
+    int ngn = branchParticle->GetEntriesFast();
+    for(int i=0;i<ngn;i++ ) {
+      prt = (GenParticle*) branchParticle->At(i);
+      int id=(prt->PID);
+      if(idbg>0) {
+	if(abs(id)>4900000) {
+	myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt of "<<prt->PT<<std::endl;
+      }
+      }
+    }
 
 
     // Analyse tracks
@@ -222,8 +236,8 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 	    if(idbg>0) myfile<<"   contains track "<<j<<" with pt, eta, phi of "<<trk->PT<<" "<<trk->Eta<<" "<<trk->Phi<<" d0 of "<<trk->D0<<
 		       //" and D0error of "<<trk->ErrorD0<<
 std::endl;
-	    particle = (GenParticle*) trk->Particle.GetObject();
-	    if(idbg>0) myfile<<"     which matches to get particle with XY of "<<particle->X<<" "<<particle->Y<<std::endl;
+	    prt = (GenParticle*) trk->Particle.GetObject();
+	    if(idbg>0) myfile<<"     which matches to get particle with XY of "<<prt->X<<" "<<prt->Y<<std::endl;
 	  if((trk->D0)>D0Max[i]) D0Max[i]=(trk->D0);
 	  allpT+=trk->PT;
 	  //	  if((trk->ErrorD0)>0) {  // this does not seem to be implemented
