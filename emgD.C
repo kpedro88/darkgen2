@@ -27,7 +27,7 @@ float PT1CUT = 400;
 float PT2CUT = 200;
 float PT3CUT = 200;
 float PT4CUT = 100;
-float JETETA = 2;
+float JETETACUT = 2;
 float ALPHAMAXCUT = 0.2;
 
   std::ofstream myfile;
@@ -205,6 +205,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
     vector<float> alphaMax(njet);  // not really alpha max but best we can do here
     vector<float> D0Max(njet);
     float allpT,cutpT,dR;
+    if(idbg>0) myfile<<" number of jets is "<<njet<<std::endl;
     for(int i=0;i<njet;i++) {
       jet = (Jet*) branchJet->At(i);
       if(idbg>0) myfile<<"jet "<<i<<"  with pt, eta, phi of "<<jet->PT<<" "<<jet->Eta<<" "<<jet->Phi<<std::endl;
@@ -274,16 +275,16 @@ std::endl;
       if((ht->HT)>HTCUT) {
         plots->Count->Fill("HT",1);
         jet = (Jet*) branchJet->At(0);
-	if(((jet->PT)>PT1CUT)&&(fabs(jet->Eta)<2)) {
+	if(((jet->PT)>PT1CUT)&&(fabs(jet->Eta)<JETETACUT)) {
           plots->Count->Fill("PT1CUT",1);
         jet = (Jet*) branchJet->At(1);
-	if(((jet->PT)>PT2CUT)&&(fabs(jet->Eta)<2)) {
+	if(((jet->PT)>PT2CUT)&&(fabs(jet->Eta)<JETETACUT)) {
           plots->Count->Fill("PT2CUT",1);
         jet = (Jet*) branchJet->At(2);
-	if(((jet->PT)>PT3CUT)&&(fabs(jet->Eta)<2)) {
+	if(((jet->PT)>PT3CUT)&&(fabs(jet->Eta)<JETETACUT)) {
           plots->Count->Fill("PT3CUT",1);
         jet = (Jet*) branchJet->At(3);
-	if(((jet->PT)>PT4CUT)&&(fabs(jet->Eta)<2)) {
+	if(((jet->PT)>PT4CUT)&&(fabs(jet->Eta)<JETETACUT)) {
           plots->Count->Fill("PT4CUT",1);
 	  if(nalpha>1) {
           plots->Count->Fill("AM",1);
@@ -296,13 +297,10 @@ std::endl;
 
 
 
-    //find emerging jets
 
 
 
       //
-  plots->Count->LabelsDeflate();
-  plots->Count->LabelsOption("v");
 
 
   }
@@ -334,6 +332,10 @@ void emgD(const char *inputFile)
   BookHistograms(result, plots);
 
   AnalyseEvents(treeReader, plots);
+
+  plots->Count->LabelsDeflate();
+  plots->Count->LabelsOption("v");
+
 
   PrintHistograms(result, plots);
 
