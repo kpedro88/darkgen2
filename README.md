@@ -9,6 +9,9 @@ root -l
 
 
 
+(see darkgen2 to see how to make an input file )
+
+
 
 
 ( to link pythia8.224 with HepMC, download it from somewhere, do:

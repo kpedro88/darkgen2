@@ -7,6 +7,7 @@ root -l examples/Example2.C'("delphes_output.root")'
 
 #include "TH1.h"
 #include "TSystem.h"
+#include <stdlib.h>
 
 #ifdef __CLING__
 R__LOAD_LIBRARY(libDelphes)
@@ -15,14 +16,40 @@ R__LOAD_LIBRARY(libDelphes)
 #include "external/ExRootAnalysis/ExRootResult.h"
 #endif
 
+
+int idbg=1;
+float ConeSize=0.4;
+float D0SigCut=0.2;
+float HTCUT = 1000.;
+float PT1CUT = 400;
+float PT2CUT = 200;
+float PT3CUT = 200;
+float PT4CUT = 100;
+float JETETA = 2;
+float ALPHAMAXCUT = 0.2;
+
 //------------------------------------------------------------------------------
+
+float DeltaR(float eta1, float phi1, float eta2, float phi2) {
+  
+  float dR=0.;
+  float deta = std::fabs(eta1-eta2);
+  float dphi = std::fabs(phi1-phi2);
+  if(dphi>3.14159) dphi = 2.*3.14159-dphi;
+  dR=std::sqrt(deta*deta+dphi*dphi);
+		     
+  return dR;
+}
 
 struct MyPlots
 {
-  TH1 *fJetPT[4];
+  TH1 *Count;
+  TH1 *fJetPT;
+  TH1 *fJetAM;
   TH1 *fnJet;
   TH1 *fnTRK;
   TH1 *ftrkPT;
+  TH1 *ftrkD0;
   TH1 *fMissingET;
   TH1 *fHT;
 };
@@ -53,6 +80,11 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
     "track P_{T}, GeV/c", "number of tracks",
     50, 0.0, 50.0);
 
+  plots->ftrkD0 = result->AddHist1D(
+    "track_d0", "track D_{0}",
+    "track D_{0}, mm", "number of tracks",
+    50, -1.0, 1.0);
+
 
   // book histograms for jets
 
@@ -61,53 +93,17 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
     "number of jets", "number of events",
     50, 0.0, 50.0);
 
-
-  plots->fJetPT[0] = result->AddHist1D(
-    "jet_pt_0", "leading jet P_{T}",
-    "jet P_{T}, GeV/c", "number of jets",
-    100, 0.0, 1000.0);
-
-  plots->fJetPT[1] = result->AddHist1D(
-    "jet_pt_1", "2nd leading jet P_{T}",
-    "jet P_{T}, GeV/c", "number of jets",
-    100, 0.0, 1000.0);
+  plots->fJetPT = result->AddHist1D(
+    "jet_pt", "jet P_{T}",
+    "jet P_{T}, GeV/c", "number of jet",
+    50, 0.0, 500.0);
 
 
-  plots->fJetPT[2] = result->AddHist1D(
-    "jet_pt_2", "3rd leading jet P_{T}",
-    "jet P_{T}, GeV/c", "number of jets",
-    100, 0.0, 1000.0);
+  plots->fJetAM = result->AddHist1D(
+    "jet_alphamax", "jet alphamax",
+    "alphamax 4 leading jets", "number of jet",
+    50, 0.0, 1.0);
 
-
-  plots->fJetPT[3] = result->AddHist1D(
-    "jet_pt_3", "4th leading jet P_{T}",
-    "jet P_{T}, GeV/c", "number of jets",
-    100, 0.0, 1000.0);
-
-  plots->fJetPT[0]->SetLineColor(kRed);
-  plots->fJetPT[1]->SetLineColor(kBlue);
-  plots->fJetPT[2]->SetLineColor(kGreen);
-  plots->fJetPT[3]->SetLineColor(kBlack);
-
-  // book 1 stack of 2 histograms
-
-  stack = result->AddHistStack("jet_pt_all", "1st and 2nd jets P_{T}");
-  stack->Add(plots->fJetPT[0]);
-  stack->Add(plots->fJetPT[1]);
-  stack->Add(plots->fJetPT[2]);
-  stack->Add(plots->fJetPT[3]);
-
-  // book legend for stack of 2 histograms
-
-  legend = result->AddLegend(0.72, 0.86, 0.98, 0.98);
-  legend->AddEntry(plots->fJetPT[0], "leading jet", "l");
-  legend->AddEntry(plots->fJetPT[1], "second jet", "l");
-  legend->AddEntry(plots->fJetPT[2], "third jet", "l");
-  legend->AddEntry(plots->fJetPT[3], "fourth jet", "l");
-
-  // attach legend to stack (legend will be printed over stack in .eps file)
-
-  result->Attach(stack, legend);
 
   // book more histograms
 
@@ -122,6 +118,14 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
     "HT", "HT",
     "HT, GeV", "number of events",
     100, 0.0, 5000.0);
+
+
+  // cut flow
+  plots->Count = result->AddHist1D(
+      "Count", "Count","cut flow","number of events",3,0,3);
+  plots->Count->SetStats(0);
+  plots->Count->SetCanExtend(TH1::kAllAxes);
+
 
   // book general comment
 
@@ -139,6 +143,8 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
   // show histogram statisics for MissingET
   plots->fMissingET->SetStats();
   plots->fHT->SetStats();
+  plots->fJetPT->SetStats();
+  plots->ftrkPT->SetStats();
 }
 
 //------------------------------------------------------------------------------
@@ -155,7 +161,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
   cout << "** Chain contains " << allEntries << " events" << endl;
 
   Track *trk;
-  Jet *jet[4];
+  Jet *jet;
   MissingET *met;
   ScalarHT *ht;
 
@@ -166,27 +172,57 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
   // Loop over all events
   for(entry = 0; entry < allEntries; ++entry)
   {
+    if(idbg>0) std::cout<<std::endl;
+    if(idbg>0) std::cout<<"event "<<entry<<std::endl;
     // Load selected branches with data from specified event
     treeReader->ReadEntry(entry);
 
 
+    // Analyse tracks
+    int ntrk = branchTRK->GetEntriesFast();
+    plots->fnTRK->Fill(ntrk);
+    for(int i=0;i<ntrk;i++ ) {
+      trk = (Track*) branchTRK->At(i);
+      plots->ftrkPT->Fill(trk->PT);
+      plots->ftrkD0->Fill(trk->D0);
+    }
 
-    // plots for jets
+
+    // plots for jets and calculate displaced jet variables
     int njet = branchJet->GetEntriesFast();
     plots->fnJet->Fill(njet);
 
-    if(njet >= 4)  // for events with at least 4 jets
-    {
-      jet[0] = (Jet*) branchJet->At(0);
-      jet[1] = (Jet*) branchJet->At(1);
-      jet[2] = (Jet*) branchJet->At(2);
-      jet[3] = (Jet*) branchJet->At(3);
-
-      plots->fJetPT[0]->Fill(jet[0]->PT);
-      plots->fJetPT[1]->Fill(jet[1]->PT);
-      plots->fJetPT[2]->Fill(jet[2]->PT);
-      plots->fJetPT[3]->Fill(jet[3]->PT);
+    vector<float> alphaMax(njet);  // not really alpha max but best we can do here
+    vector<float> D0Max(njet);
+    float allpT,cutpT,dR;
+    for(int i=0;i<njet;i++) {
+      jet = (Jet*) branchJet->At(i);
+      if(idbg>0) std::cout<<"jet with pt of "<<jet->PT<<std::endl;
+      plots->fJetPT->Fill(jet->PT);
+      alphaMax[i]=1.;
+      D0Max[i]=0.;
+      allpT=0.;
+      cutpT=0;
+      for(int j=0;j<ntrk;j++) {
+        trk = (Track*) branchTRK->At(j);
+	dR=DeltaR(jet->Eta,jet->Phi,trk->Eta,trk->Phi);
+	if(dR<ConeSize) {
+	  if(idbg>0) std::cout<<"   contains track "<<j<<" with pt of "<<trk->PT<<" d0 of "<<trk->D0<<" and D0error of "<<trk->ErrorD0<<std::endl;
+	  if((trk->D0)>D0Max[i]) D0Max[i]=(trk->D0);
+	  allpT+=trk->PT;
+	  //	  if((trk->ErrorD0)>0) {  // this does not seem to be implemented
+	  //	    if(((trk->D0)/(trk->ErrorD0))<D0SigCut) {
+	    if((trk->D0)<D0SigCut) {
+	      cutpT+=trk->PT;
+	    }
+	      //}
+	}
+      }
+      if(allpT>0) {
+	alphaMax[i]=cutpT/allpT;
+      }
     }
+
 
     // Analyse missing ET
     if(branchMissingET->GetEntriesFast() > 0)
@@ -204,18 +240,53 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
     }
 
 
-
-    // Analyse tracks
-    int ntrk = branchTRK->GetEntriesFast();
-    plots->fnTRK->Fill(ntrk);
-    for(int i=0;i<ntrk;i++ ) {
-      trk = (Track*) branchTRK->At(i);
-      plots->ftrkPT->Fill(trk->PT);
+    //count number of the 4 leading jets with alpha max < a cut
+    int nalpha=0;
+    int iloop=min(4,njet);
+    for(int i=0;i<iloop;i++) {
+      plots->fJetAM->Fill(alphaMax[i]);
+      if(alphaMax[i]<ALPHAMAXCUT) {
+	nalpha+=1;
+	if(idbg>0) std::cout<<" jet "<<i<<" passes alphamax cut with alphamax of "<<alphaMax[i]<<std::endl;
+      }
     }
+
+    // do pseudo emerging jets analysis
+    plots->Count->Fill("All",1);
+    if(njet>3) {
+      plots->Count->Fill("4 jets",1);
+      if((ht->HT)>HTCUT) {
+        plots->Count->Fill("HT",1);
+        jet = (Jet*) branchJet->At(0);
+	if(((jet->PT)>PT1CUT)&&(fabs(jet->Eta)<2)) {
+          plots->Count->Fill("PT1CUT",1);
+        jet = (Jet*) branchJet->At(1);
+	if(((jet->PT)>PT2CUT)&&(fabs(jet->Eta)<2)) {
+          plots->Count->Fill("PT2CUT",1);
+        jet = (Jet*) branchJet->At(2);
+	if(((jet->PT)>PT3CUT)&&(fabs(jet->Eta)<2)) {
+          plots->Count->Fill("PT3CUT",1);
+        jet = (Jet*) branchJet->At(3);
+	if(((jet->PT)>PT4CUT)&&(fabs(jet->Eta)<2)) {
+          plots->Count->Fill("PT4CUT",1);
+	  if(nalpha>1) {
+          plots->Count->Fill("AM",1);
+	  if(idbg>0) std::cout<<" event passes all cuts"<<std::endl;
+	  }
+	}}}}
+      }
+    }
+    
 
 
 
     //find emerging jets
+
+
+
+      //
+  plots->Count->LabelsDeflate();
+  plots->Count->LabelsOption("v");
 
 
   }
