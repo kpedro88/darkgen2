@@ -20,8 +20,11 @@ R__LOAD_LIBRARY(libDelphes)
 struct MyPlots
 {
   TH1 *fJetPT[4];
+  TH1 *fnJet;
+  TH1 *fnTRK;
+  TH1 *ftrkPT;
   TH1 *fMissingET;
-  TH1 *fElectronPT;
+  TH1 *fHT;
 };
 
 //------------------------------------------------------------------------------
@@ -37,7 +40,27 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
   TLegend *legend;
   TPaveText *comment;
 
-  // book 2 histograms for PT of 1st and 2nd leading jets
+
+  //book histograms for tracks
+
+  plots->fnTRK = result->AddHist1D(
+    "nTRK", "number of tracks",
+    "number of tracks", "number of events",
+    50, 0.0, 100.0);
+
+  plots->ftrkPT = result->AddHist1D(
+    "track_pt", "track P_{T}",
+    "track P_{T}, GeV/c", "number of tracks",
+    50, 0.0, 50.0);
+
+
+  // book histograms for jets
+
+  plots->fnJet = result->AddHist1D(
+    "nJet", "number of jets",
+    "number of jets", "number of events",
+    50, 0.0, 100.0);
+
 
   plots->fJetPT[0] = result->AddHist1D(
     "jet_pt_0", "leading jet P_{T}",
@@ -88,15 +111,17 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
 
   // book more histograms
 
-  plots->fElectronPT = result->AddHist1D(
-    "electron_pt", "electron P_{T}",
-    "electron P_{T}, GeV/c", "number of electrons",
-    50, 0.0, 100.0);
 
   plots->fMissingET = result->AddHist1D(
     "missing_et", "Missing E_{T}",
     "Missing E_{T}, GeV", "number of events",
     100, 0.0, 1000.0);
+
+
+  plots->fHT = result->AddHist1D(
+    "HT", "HT",
+    "HT, GeV", "number of events",
+    100, 0.0, 5000.0);
 
   // book general comment
 
@@ -109,29 +134,30 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
 
   result->Attach(plots->fJetPT[0], comment);
   result->Attach(plots->fJetPT[1], comment);
-  result->Attach(plots->fElectronPT, comment);
   */
 
   // show histogram statisics for MissingET
   plots->fMissingET->SetStats();
-  plots->fElectronPT->SetStats();
+  plots->fHT->SetStats();
 }
 
 //------------------------------------------------------------------------------
 
 void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 {
+  TClonesArray *branchTRK = treeReader->UseBranch("Track");
   TClonesArray *branchJet = treeReader->UseBranch("Jet");
-  TClonesArray *branchElectron = treeReader->UseBranch("Electron");
   TClonesArray *branchMissingET = treeReader->UseBranch("MissingET");
+  TClonesArray *branchScalarHT = treeReader->UseBranch("ScalarHT");
 
   Long64_t allEntries = treeReader->GetEntries();
 
   cout << "** Chain contains " << allEntries << " events" << endl;
 
+  Track *trk;
   Jet *jet[4];
   MissingET *met;
-  Electron *electron;
+  ScalarHT *ht;
 
   Long64_t entry;
 
@@ -143,8 +169,13 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
     // Load selected branches with data from specified event
     treeReader->ReadEntry(entry);
 
-    // Analyse four leading jets
-    if(branchJet->GetEntriesFast() >= 4)
+
+
+    // plots for jets
+    int njet = branchJet->GetEntriesFast();
+    plots->fnTRK->Fill(njet);
+
+    if(njet >= 4)  // for events with at least 4 jets
     {
       jet[0] = (Jet*) branchJet->At(0);
       jet[1] = (Jet*) branchJet->At(1);
@@ -164,12 +195,25 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
       plots->fMissingET->Fill(met->MET);
     }
 
-    // Loop over all electrons in event
-    for(i = 0; i < branchElectron->GetEntriesFast(); ++i)
+
+    // Analyse  HT
+    if(branchScalarHT->GetEntriesFast() > 0)
     {
-      electron = (Electron*) branchElectron->At(i);
-      plots->fElectronPT->Fill(electron->PT);
+      ht = (ScalarHT*) branchScalarHT->At(0);
+      plots->fHT->Fill(ht->HT);
     }
+
+
+
+    // Analyse tracks
+    int ntrk = branchTRK->GetEntriesFast();
+    plots->fnJet->Fill(ntrk);
+    for(int i=0;i<ntrk;i++ ) {
+      trk = (Track*) branchTRK->At(i);
+      plots->ftrkPT->Fill(trk->PT);
+    }
+
+
 
     //find emerging jets
 
