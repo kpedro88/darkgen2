@@ -240,7 +240,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 
     // find all status 0 particles in initial cone
 
-    if(idbg>0) {
+    if(idbg>2) {
       vector<int> motherpartons;
       if(firstdq>0) motherpartons.push_back(firstdq);
       if(firstadq>0) motherpartons.push_back(firstadq);
