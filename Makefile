@@ -9,7 +9,7 @@ PYTHIA8 := /data/users/eno/pythia8224/
 -include $(PYTHIA8)/config.mk
 
 # A few variables used in this Makefile:
-EX           := hist tree pythiaTree
+EX           := hist tree pythiaTree pythiaBlank
 EXE          := $(addsuffix .exe,$(EX))
 PYTHIA8      ?= $(PWD)/..
 STATICLIB    := $(PYTHIA8)/lib/libpythia8.a $(PYTHIA8)/libHepMC.a
@@ -38,6 +38,10 @@ hist: $(STATICLIB) hist.cc
 
 # Rule to build hist example. Needs static PYTHIA 8 library
 pythiaTree: $(STATICLIB) pythiaTree.cc
+	$(CXX) $(ROOTCXXFLAGS) $@.cc -o $@.exe $(LDFLAGS1)
+
+# Rule to build hist example. Needs static PYTHIA 8 library
+pythiaBlank: $(STATICLIB) pythiaBlank.cc
 	$(CXX) $(ROOTCXXFLAGS) $@.cc -o $@.exe $(LDFLAGS1)
 
 # Rule to build tree example. Needs dictionary to be built and
