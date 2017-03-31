@@ -19,7 +19,7 @@ R__LOAD_LIBRARY(libDelphes)
 #endif
 
 
-int idbg=1;
+int idbg=0;
 float ConeSize=0.4;
 float D0SigCut=0.2;
 float HTCUT = 1000.;
