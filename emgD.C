@@ -179,6 +179,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
   Long64_t entry;
 
   Int_t i;
+  float dR;
 
   // Loop over all events
 
@@ -221,7 +222,6 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
       }
     }
 
-
     if(idbg>0) {
       if((firstdq<0)||(firstadq<0)||(firstd<0)||(firstad<0)) {
 	  std::cout<<"danger danger will robinson did not find initial partons"<<std::endl;
@@ -234,6 +234,36 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
         myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt, eta, phi  of "<<prt->PT<<" "<<prt->Eta<<" "<<prt->Phi<<std::endl;
         prt = (GenParticle*) branchParticle->At(firstad);
         myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt, eta, phi  of "<<prt->PT<<" "<<prt->Eta<<" "<<prt->Phi<<std::endl;
+      }
+    }
+
+
+    // find all status 0 particles in initial cone
+
+    if(idbg>0) {
+      vector<int> motherpartons;
+      if(firstdq>0) motherpartons.push_back(firstdq);
+      if(firstadq>0) motherpartons.push_back(firstadq);
+      if(firstd>0) motherpartons.push_back(firstd);
+      if(firstad>0) motherpartons.push_back(firstad);
+
+      for(int i=0;i<motherpartons.size();i++ ) {
+	myfile<<"finding stable particles in cone for particle "<<i<<std::endl;
+        prt2 = (GenParticle*) branchParticle->At(motherpartons[i]);
+	float pttotal=0.;
+        for(int j=0;j<ngn;j++ ) {
+          prt = (GenParticle*) branchParticle->At(j);
+	  //	  myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt, eta, phi  of "<<prt->PT<<" "<<prt->Eta<<" "<<prt->Phi<<" and status "<<prt->Status<<std::endl;
+
+	  if(prt->Status==1) {
+	    dR=DeltaR(prt->Eta,prt->Phi,prt2->Eta,prt2->Phi);      
+	    if(dR<ConeSize) {
+              myfile<<"   contains particle "<<j<<" has pid "<<prt->PID<<" and pt, eta, phi  of "<<prt->PT<<" "<<prt->Eta<<" "<<prt->Phi<<std::endl;
+	      pttotal=pttotal+(prt->PT);
+	    }
+	  }
+	}
+	myfile<<" total pT in cone is "<<pttotal<<std::endl;
       }
     }
 
@@ -254,7 +284,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 
     vector<float> alphaMax(njet);  // not really alpha max but best we can do here
     vector<float> D0Max(njet);
-    float allpT,cutpT,dR;
+    float allpT,cutpT;
     if(idbg>0) myfile<<" number of jets is "<<njet<<std::endl;
     for(int i=0;i<njet;i++) {
       jet = (Jet*) branchJet->At(i);
