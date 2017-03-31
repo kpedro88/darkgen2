@@ -170,6 +170,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
   cout << "** Chain contains " << allEntries << " events" << endl;
 
   GenParticle *prt;
+  GenParticle *prt2;
   Track *trk;
   Jet *jet;
   MissingET *met;
@@ -180,7 +181,10 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
   Int_t i;
 
   // Loop over all events
-  for(entry = 0; entry < allEntries; ++entry)
+
+  int ijloop = allEntries;
+  if(idbg>0) ijloop = 10;
+  for(entry = 0; entry < ijloop; ++entry)
   {
     if(idbg>0) myfile<<std::endl;
     if(idbg>0) myfile<<"event "<<entry<<std::endl;
@@ -191,16 +195,45 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 
     // Analyse gen particles
     int ngn = branchParticle->GetEntriesFast();
+    int firstdq = -1;
+    int firstadq = -1;
+    int firstd = -1;
+    int firstad = -1;
     for(int i=0;i<ngn;i++ ) {
       prt = (GenParticle*) branchParticle->At(i);
       int id=(prt->PID);
-      if(idbg>0) {
-	if(abs(id)==4900001) {
-	  myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt of "<<prt->PT<<std::endl;
-        }
-	if(abs(id)==1) {
-	  myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt of "<<prt->PT<<std::endl;
-        }
+      if((id==4900101)&&(firstdq<0)) {
+	firstdq=i;
+	if(idbg>0) myfile<<" first dark quark"<<std::endl;
+	firstd=i-1;
+        prt2 = (GenParticle*) branchParticle->At(firstd);
+	if(abs(prt2->PID)!=1) std::cout<<"danger danger did not find d"<<std::endl;
+      }
+      if((id==-4900101)&&(firstadq<0)) {
+	firstadq=i;
+	if(idbg>0) myfile<<" first dark antiquark"<<std::endl;
+	firstad=i-1;
+        prt2 = (GenParticle*) branchParticle->At(firstad);
+	if(abs(prt2->PID)!=1) std::cout<<"danger danger did not find antid"<<std::endl;
+      }
+      if(idbg>5) {
+	  myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt of "<<prt->PT<<" status "<<prt->Status<<" mothers "<<prt->M1<<" "<<prt->M2<<std::endl;
+      }
+    }
+
+
+    if(idbg>0) {
+      if((firstdq<0)||(firstadq<0)||(firstd<0)||(firstad<0)) {
+	  std::cout<<"danger danger will robinson did not find initial partons"<<std::endl;
+      } else {
+        prt = (GenParticle*) branchParticle->At(firstdq);
+        myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt, eta, phi  of "<<prt->PT<<" "<<prt->Eta<<" "<<prt->Phi<<std::endl;
+        prt = (GenParticle*) branchParticle->At(firstd);
+        myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt, eta, phi  of "<<prt->PT<<" "<<prt->Eta<<" "<<prt->Phi<<std::endl;
+        prt = (GenParticle*) branchParticle->At(firstadq);
+        myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt, eta, phi  of "<<prt->PT<<" "<<prt->Eta<<" "<<prt->Phi<<std::endl;
+        prt = (GenParticle*) branchParticle->At(firstad);
+        myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt, eta, phi  of "<<prt->PT<<" "<<prt->Eta<<" "<<prt->Phi<<std::endl;
       }
     }
 
