@@ -269,11 +269,11 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 	dR=DeltaR(jet->Eta,jet->Phi,trk->Eta,trk->Phi);
 	if(dR<ConeSize) {
 	  if(i<4) {
-	    if(idbg>0) myfile<<"   contains track "<<j<<" with pt, eta, phi of "<<trk->PT<<" "<<trk->Eta<<" "<<trk->Phi<<" d0 of "<<trk->D0<<
+	    if(idbg>3) myfile<<"   contains track "<<j<<" with pt, eta, phi of "<<trk->PT<<" "<<trk->Eta<<" "<<trk->Phi<<" d0 of "<<trk->D0<<
 		       //" and D0error of "<<trk->ErrorD0<<
 std::endl;
 	    prt = (GenParticle*) trk->Particle.GetObject();
-	    if(idbg>0) myfile<<"     which matches to get particle with XY of "<<prt->X<<" "<<prt->Y<<std::endl;
+	    if(idbg>3) myfile<<"     which matches to get particle with XY of "<<prt->X<<" "<<prt->Y<<std::endl;
 	  if((trk->D0)>D0Max[i]) D0Max[i]=(trk->D0);
 	  allpT+=trk->PT;
 	  //	  if((trk->ErrorD0)>0) {  // this does not seem to be implemented
