@@ -217,7 +217,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
         prt2 = (GenParticle*) branchParticle->At(firstad);
 	if(abs(prt2->PID)!=1) std::cout<<"danger danger did not find antid"<<std::endl;
       }
-      if(idbg>5) {
+      if(idbg>20) {
 	  myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt of "<<prt->PT<<" status "<<prt->Status<<" mothers "<<prt->M1<<" "<<prt->M2<<std::endl;
       }
     }
