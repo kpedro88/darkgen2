@@ -60,6 +60,11 @@ int main(int argc, char* argv[]) {
 
 
 
+  // create a file for hepMC output if needed                                   
+  //ihepMCout                                                                   
+  HepMC::Pythia8ToHepMC ToHepMC;
+  HepMC::IO_GenEvent ascii_io("hepmc.out", std::ios::out);
+
   // Begin event loop. Generate event; skip if generation aborted.
 
 
@@ -74,6 +79,18 @@ int main(int argc, char* argv[]) {
       std::cout<<endl;
       std::cout<<"***********************************************************"<<endl;
       std::cout<<"Will Robinson New Event "<<iEvent<<std::endl;
+    }
+
+
+    if(ihepMCout>0) {  // write hepMCoutput file                                
+      HepMC::GenEvent* hepmcevt = new HepMC::GenEvent();
+      ToHepMC.fill_next_event( pythia, hepmcevt );
+
+      // Write the HepMC event to file. Done with it.                          \
+      //                                                         
+      ascii_io << hepmcevt;
+      delete hepmcevt;
+
     }
 
 
