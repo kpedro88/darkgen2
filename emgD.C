@@ -58,6 +58,8 @@ struct MyPlots
   TH1 *fnTRK;
   TH1 *ftrkPT;
   TH1 *ftrkD0;
+  TH1 *ftrkD0Error;
+  TH1 *ftrkD0sig;
   TH1 *fMissingET;
   TH1 *felectronPT;
   TH1 *fmuonPT;
@@ -94,6 +96,18 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
     "track_d0", "track D_{0}",
     "track D_{0}, mm", "number of tracks",
     50, -1.0, 1.0);
+
+  plots->ftrkD0Error = result->AddHist1D(
+    "track_d0Error", "track D_{0} Error",
+    "track D_{0} Error, mm", "number of tracks",
+    50, -0.5, 0.5);
+
+
+
+  plots->ftrkD0sig = result->AddHist1D(
+    "track_d0sig", "track D_{0} sig",
+    "track D_{0} sig", "number of tracks",
+    50, -5.0, 5.0);
 
 
   // book histograms for jets
@@ -181,6 +195,9 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
   plots->fHT->SetStats();
   plots->fJetPT->SetStats();
   plots->ftrkPT->SetStats();
+  plots->ftrkD0->SetStats();
+  plots->ftrkD0Error->SetStats();
+  plots->ftrkD0sig->SetStats();
 }
 
 //------------------------------------------------------------------------------
@@ -309,6 +326,9 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
       trk = (Track*) branchTRK->At(i);
       plots->ftrkPT->Fill(trk->PT);
       plots->ftrkD0->Fill(trk->D0);
+      plots->ftrkD0Error->Fill(trk->ErrorD0);
+      //      std::cout<<"track d0 d0error "<<trk->D0<<" "<<trk->ErrorD0<<std::endl;
+      if((trk->ErrorD0)>0) plots->ftrkD0sig->Fill((trk->D0)/(trk->ErrorD0));
     }
 
 
