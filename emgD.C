@@ -131,13 +131,13 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
   plots->felectronPT = result->AddHist1D(
     "electronPT", "electronPT",
     "electron PT, GeV", "number of events",
-    100, 0.0, 5000.0);
+    100, 0.0, 500.0);
 
 
   plots->fmuonPT = result->AddHist1D(
     "muonPT", "muonPT",
     "muon PT, GeV", "number of events",
-    100, 0.0, 5000.0);
+    100, 0.0, 500.0);
 
 
   // cut flow
