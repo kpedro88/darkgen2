@@ -326,9 +326,9 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
       trk = (Track*) branchTRK->At(i);
       plots->ftrkPT->Fill(trk->PT);
       plots->ftrkD0->Fill(trk->D0);
-      plots->ftrkD0Error->Fill(trk->ErrorD0);
+      plots->ftrkD0Error->Fill(fabs(trk->ErrorD0));  // for some reason, delphse pulls this from a caussian with a mean of zero, so half the time it is neg, which makes no sense to me
       //      std::cout<<"track d0 d0error "<<trk->D0<<" "<<trk->ErrorD0<<std::endl;
-      if((trk->ErrorD0)>0) plots->ftrkD0sig->Fill((trk->D0)/(trk->ErrorD0));
+      if((trk->ErrorD0)>0) plots->ftrkD0sig->Fill(fabs((trk->D0)/(trk->ErrorD0)));
     }
 
 
