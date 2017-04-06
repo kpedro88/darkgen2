@@ -57,6 +57,8 @@ struct MyPlots
   TH1 *ftrkPT;
   TH1 *ftrkD0;
   TH1 *fMissingET;
+  TH1 *felectronPT;
+  TH1 *fmuonPT;
   TH1 *fHT;
 };
 
@@ -126,6 +128,18 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
     100, 0.0, 5000.0);
 
 
+  plots->felectronPT = result->AddHist1D(
+    "electronPT", "electronPT",
+    "electron PT, GeV", "number of events",
+    100, 0.0, 5000.0);
+
+
+  plots->fmuonPT = result->AddHist1D(
+    "muonPT", "muonPT",
+    "muon PT, GeV", "number of events",
+    100, 0.0, 5000.0);
+
+
   // cut flow
   plots->Count = result->AddHist1D(
       "Count", "Count","cut flow","number of events",3,0,3);
@@ -162,6 +176,8 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
   TClonesArray *branchJet = treeReader->UseBranch("Jet");
   TClonesArray *branchMissingET = treeReader->UseBranch("MissingET");
   TClonesArray *branchScalarHT = treeReader->UseBranch("ScalarHT");
+  TClonesArray *branchElectron = treeReader->UseBranch("Electron");
+  TClonesArray *branchMuon = treeReader->UseBranch("Muon");
 
 
 
@@ -175,6 +191,8 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
   Jet *jet;
   MissingET *met;
   ScalarHT *ht;
+  Electron *electron;
+  Muon *muon;
 
   Long64_t entry;
 
@@ -208,14 +226,14 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 	if(idbg>0) myfile<<" first dark quark"<<std::endl;
 	firstd=i-1;
         prt2 = (GenParticle*) branchParticle->At(firstd);
-	if(abs(prt2->PID)!=1) std::cout<<"danger danger did not find d"<<std::endl;
+	//	if(abs(prt2->PID)!=1) std::cout<<"danger danger did not find d"<<std::endl;
       }
       if((id==-4900101)&&(firstadq<0)) {
 	firstadq=i;
 	if(idbg>0) myfile<<" first dark antiquark"<<std::endl;
 	firstad=i-1;
         prt2 = (GenParticle*) branchParticle->At(firstad);
-	if(abs(prt2->PID)!=1) std::cout<<"danger danger did not find antid"<<std::endl;
+	//	if(abs(prt2->PID)!=1) std::cout<<"danger danger did not find antid"<<std::endl;
       }
       if(idbg>20) {
 	  myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt of "<<prt->PT<<" status "<<prt->Status<<" mothers "<<prt->M1<<" "<<prt->M2<<std::endl;
@@ -335,6 +353,23 @@ std::endl;
       ht = (ScalarHT*) branchScalarHT->At(0);
       plots->fHT->Fill(ht->HT);
     }
+
+
+    // Loop over all electrons in event                                                       
+    for(i = 0; i < branchElectron->GetEntriesFast(); ++i)
+      {
+	electron = (Electron*) branchElectron->At(i);
+	plots->felectronPT->Fill(electron->PT);
+      }
+ 
+
+   // Loop over all muons in event                                                       
+    for(i = 0; i < branchMuon->GetEntriesFast(); ++i)
+      {
+	muon = (Muon*) branchMuon->At(i);
+	plots->fmuonPT->Fill(muon->PT);
+      }
+ 
 
 
     //count number of the 4 leading jets with alpha max < a cut
