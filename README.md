@@ -25,7 +25,8 @@ cd ..
 to run delphes on the output
 download delphes from https://github.com/delphes/delphes
 make the exes following the README there
-./DelphesHepMC cards/delphes_card_CMS.tcl haha.root ../darkgen2/hepmc.out
+copy delphes_card_CMS_imp.tcl from here to your delphse area
+./DelphesHepMC delphes_card_CMS_imp.tcl haha.root ../darkgen2/hepmc.out
 
 
  )
