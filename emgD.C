@@ -56,6 +56,7 @@ struct MyPlots
   TH1 *fJetAMp;
   TH1 *fJetD0max;
   TH1 *fJetD0med;
+  TH1 *fJetTHmed;
   TH1 *fnJet;
   TH1 *fnTRK;
   TH1 *ftrkPT;
@@ -154,6 +155,11 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
     "d0med 4 leading jets", "number of jet",
     50, 0.0, 1.0);
 
+  plots->fJetTHmed = result->AddHist1D(
+    "jet_THmed", "jet th med",
+    "theta2d med 4 leading jets", "number of jet",
+    50, 0.0, 3.2);
+
 
 
 
@@ -216,6 +222,7 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
   plots->ftrkD0sig->SetStats();
   plots->fJetAM->SetStats();
   plots->fJetAMp->SetStats();
+  plots->fJetTHmed->SetStats();
 }
 
 //------------------------------------------------------------------------------
@@ -376,6 +383,8 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
     vector<float> alphaMaxp(njet);
     vector<float> D0Max(njet);
     vector<float> D0Med(njet);
+    vector<float> THMed(njet);
+    vector<int> ntrk1(njet);
     float allpT,cutpT,cutpTp;
     int ntrkj;
     if(idbg>0) myfile<<" number of jets is "<<njet<<std::endl;
@@ -387,6 +396,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
       alphaMaxp[i]=1.;
       D0Max[i]=0.;
       D0Med[i]=0.;
+      THMed[i]=0.;
       allpT=0.;
       cutpT=0;
       cutpTp=0;
@@ -395,25 +405,28 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
         trk = (Track*) branchTRK->At(j);
 	dR=DeltaR(jet->Eta,jet->Phi,trk->Eta,trk->Phi);
 	if(dR<ConeSize) {
-	  ntrkj+=1;
-	  if((trk->D0)>D0Max[i]) D0Max[i]=(trk->D0);
-	  D0Med[i]=D0Med[i]+(trk->D0);
-	  allpT+=trk->PT;
-	  if((fabs(trk->ErrorD0))>0) {  // this is not implemented by default.  Hope I did it right!
-	    if(fabs((trk->D0)/(trk->ErrorD0))<D0SigCut) {
-	      cutpT+=trk->PT;
-	    }}
-	  if(fabs((trk->D0))<D0Cut) {
+	  if(trk->PT>1) {
+	    ntrkj+=1;
+	    if((trk->D0)>D0Max[i]) D0Max[i]=(trk->D0);
+	    D0Med[i]=D0Med[i]+(trk->D0);
+	    THMed[i]=THMed[i]+trkTheta[j];
+	    allpT+=trk->PT;
+	    if((fabs(trk->ErrorD0))>0) {  // this is not implemented by default.  Hope I did it right!
+	      if(fabs((trk->D0)/(trk->ErrorD0))<D0SigCut) {
+	        cutpT+=trk->PT;
+	      }}
+	    if(fabs((trk->D0))<D0Cut) {
 	      cutpTp+=trk->PT;
-	  }
-	  if(i<4) {
-	    if(idbg>3) myfile<<"   contains track "<<j<<" with pt, eta, phi of "<<trk->PT<<" "<<trk->Eta<<" "<<trk->Phi<<" d0 of "<<trk->D0<<
+	    }
+	    if(i<4) {
+	      if(idbg>3) myfile<<"   contains track "<<j<<" with pt, eta, phi of "<<trk->PT<<" "<<trk->Eta<<" "<<trk->Phi<<" d0 of "<<trk->D0<<
 		       //" and D0error of "<<trk->ErrorD0<<
 std::endl;
-	    prt = (GenParticle*) trk->Particle.GetObject();
-	    if(idbg>3) myfile<<"     which matches to get particle with XY of "<<prt->X<<" "<<prt->Y<<std::endl;
+	      prt = (GenParticle*) trk->Particle.GetObject();
+	      if(idbg>3) myfile<<"     which matches to get particle with XY of "<<prt->X<<" "<<prt->Y<<std::endl;
 
-	  }  // end first 4 jets
+	    }  // end first 4 jets
+	  }  //end pT cut of 1 GeV
         } //end in cone
       }
       if(allpT>0) {
@@ -423,9 +436,10 @@ std::endl;
       if(alphaMax[i]>0.99999) alphaMax[i]=0.99999;
       if(alphaMaxp[i]>0.99999) alphaMaxp[i]=0.99999;
 
-
+      ntrk1[i]=ntrkj;
       if(ntrkj>0) {
 	D0Med[i]=D0Med[i]/ntrkj;
+	THMed[i]=THMed[i]/ntrkj;
       }
       if(idbg>0) myfile<<"alpha max is "<<alphaMax[i]<<std::endl;
     }
@@ -472,6 +486,7 @@ std::endl;
       plots->fJetAMp->Fill(alphaMaxp[i]);
       plots->fJetD0max->Fill(D0Max[i]);
       plots->fJetD0med->Fill(D0Med[i]);
+      plots->fJetTHmed->Fill(THMed[i]);
       if(alphaMax[i]<ALPHAMAXCUT) {
 	nalpha+=1;
 	if(idbg>0) myfile<<" jet "<<i<<" passes alphamax cut with alphamax of "<<alphaMax[i]<<std::endl;
@@ -485,16 +500,16 @@ std::endl;
       if((ht->HT)>HTCUT) {
         plots->Count->Fill("HT",1);
         jet = (Jet*) branchJet->At(0);
-	if(((jet->PT)>PT1CUT)&&(fabs(jet->Eta)<JETETACUT)) {
+	if(((jet->PT)>PT1CUT)&&(fabs(jet->Eta)<JETETACUT)&&(ntrk1[0]>0)) {
           plots->Count->Fill("PT1CUT",1);
         jet = (Jet*) branchJet->At(1);
-	if(((jet->PT)>PT2CUT)&&(fabs(jet->Eta)<JETETACUT)) {
+	if(((jet->PT)>PT2CUT)&&(fabs(jet->Eta)<JETETACUT)&&(ntrk1[1]>0)) {
           plots->Count->Fill("PT2CUT",1);
         jet = (Jet*) branchJet->At(2);
-	if(((jet->PT)>PT3CUT)&&(fabs(jet->Eta)<JETETACUT)) {
+	if(((jet->PT)>PT3CUT)&&(fabs(jet->Eta)<JETETACUT)&&(ntrk1[2]>0)) {
           plots->Count->Fill("PT3CUT",1);
         jet = (Jet*) branchJet->At(3);
-	if(((jet->PT)>PT4CUT)&&(fabs(jet->Eta)<JETETACUT)) {
+	if(((jet->PT)>PT4CUT)&&(fabs(jet->Eta)<JETETACUT)&&(ntrk1[3]>0)) {
           plots->Count->Fill("PT4CUT",1);
 	  if(nalpha>1) {
           plots->Count->Fill("AM",1);
