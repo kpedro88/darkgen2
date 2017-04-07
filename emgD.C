@@ -100,7 +100,7 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
   plots->ftrkTH = result->AddHist1D(
     "track_th", "track TH2D",
     "track TH2D", "number of tracks",
-    50, 0.0, 3.2);
+    50, 0.0, 0.7);
 
   plots->ftrkD0 = result->AddHist1D(
     "track_d0", "track D_{0}",
@@ -158,7 +158,7 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
   plots->fJetTHmed = result->AddHist1D(
     "jet_THmed", "jet th med",
     "theta2d med 4 leading jets", "number of jet",
-    50, 0.0, 3.2);
+    50, 0.0, 0.7);
 
 
 
