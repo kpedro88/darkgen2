@@ -21,14 +21,15 @@ R__LOAD_LIBRARY(libDelphes)
 
 int idbg=0;
 float ConeSize=0.4;
-float D0SigCut=0.2;
+float D0SigCut=3;
+float D0Cut=0.2;
 float HTCUT = 1000.;
 float PT1CUT = 400;
 float PT2CUT = 200;
 float PT3CUT = 200;
 float PT4CUT = 100;
 float JETETACUT = 2;
-float ALPHAMAXCUT = 0.2;
+float ALPHAMAXCUT = 0.1;
 
   std::ofstream myfile;
 
@@ -52,6 +53,7 @@ struct MyPlots
   TH1 *Count;
   TH1 *fJetPT;
   TH1 *fJetAM;
+  TH1 *fJetAMp;
   TH1 *fJetD0max;
   TH1 *fJetD0med;
   TH1 *fnJet;
@@ -126,7 +128,13 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
   plots->fJetAM = result->AddHist1D(
     "jet_alphamax", "jet alphamax",
     "alphamax 4 leading jets", "number of jet",
-    50, 0.0, 1.0);
+    50, 0.0, 1);
+
+
+  plots->fJetAMp = result->AddHist1D(
+    "jet_alphamaxp", "jet alphamaxp",
+    "alphamaxp 4 leading jets", "number of jet",
+    50, 0.0, 1);
 
 
   plots->fJetD0max = result->AddHist1D(
@@ -198,6 +206,8 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
   plots->ftrkD0->SetStats();
   plots->ftrkD0Error->SetStats();
   plots->ftrkD0sig->SetStats();
+  plots->fJetAM->SetStats();
+  plots->fJetAMp->SetStats();
 }
 
 //------------------------------------------------------------------------------
@@ -337,9 +347,10 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
     plots->fnJet->Fill(njet);
 
     vector<float> alphaMax(njet);  // not really alpha max but best we can do here
+    vector<float> alphaMaxp(njet);
     vector<float> D0Max(njet);
     vector<float> D0Med(njet);
-    float allpT,cutpT;
+    float allpT,cutpT,cutpTp;
     int ntrkj;
     if(idbg>0) myfile<<" number of jets is "<<njet<<std::endl;
     for(int i=0;i<njet;i++) {
@@ -347,10 +358,12 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
       if(idbg>0) myfile<<"jet "<<i<<"  with pt, eta, phi of "<<jet->PT<<" "<<jet->Eta<<" "<<jet->Phi<<std::endl;
       plots->fJetPT->Fill(jet->PT);
       alphaMax[i]=1.;
+      alphaMaxp[i]=1.;
       D0Max[i]=0.;
       D0Med[i]=0.;
       allpT=0.;
       cutpT=0;
+      cutpTp=0;
       ntrkj=0;
       for(int j=0;j<ntrk;j++) {
         trk = (Track*) branchTRK->At(j);
@@ -360,10 +373,12 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 	  if((trk->D0)>D0Max[i]) D0Max[i]=(trk->D0);
 	  D0Med[i]=D0Med[i]+(trk->D0);
 	  allpT+=trk->PT;
-	    //	  if((trk->ErrorD0)>0) {  // this does not seem to be implemented
-	    //	    if(((trk->D0)/(trk->ErrorD0))<D0SigCut) {
-	  if(fabs((trk->D0))<D0SigCut) {
+	  if((fabs(trk->ErrorD0))>0) {  // this is not implemented by default.  Hope I did it right!
+	    if(fabs((trk->D0)/(trk->ErrorD0))<D0SigCut) {
 	      cutpT+=trk->PT;
+	    }}
+	  if(fabs((trk->D0))<D0Cut) {
+	      cutpTp+=trk->PT;
 	  }
 	  if(i<4) {
 	    if(idbg>3) myfile<<"   contains track "<<j<<" with pt, eta, phi of "<<trk->PT<<" "<<trk->Eta<<" "<<trk->Phi<<" d0 of "<<trk->D0<<
@@ -377,7 +392,12 @@ std::endl;
       }
       if(allpT>0) {
 	alphaMax[i]=cutpT/allpT;
+	alphaMaxp[i]=cutpTp/allpT;
       }
+      if(alphaMax[i]>0.99999) alphaMax[i]=0.99999;
+      if(alphaMaxp[i]>0.99999) alphaMaxp[i]=0.99999;
+
+
       if(ntrkj>0) {
 	D0Med[i]=D0Med[i]/ntrkj;
       }
@@ -423,6 +443,7 @@ std::endl;
     int iloop=min(4,njet);
     for(int i=0;i<iloop;i++) {
       plots->fJetAM->Fill(alphaMax[i]);
+      plots->fJetAMp->Fill(alphaMaxp[i]);
       plots->fJetD0max->Fill(D0Max[i]);
       plots->fJetD0med->Fill(D0Med[i]);
       if(alphaMax[i]<ALPHAMAXCUT) {
