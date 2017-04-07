@@ -68,6 +68,13 @@ struct MyPlots
   TH1 *felectronPT;
   TH1 *fmuonPT;
   TH1 *fHT;
+
+  TH1 *fhtnm1;
+  TH1 *fjpt1nm1;
+  TH1 *fjpt2nm1;
+  TH1 *fjpt3nm1;
+  TH1 *fjpt4nm1;
+  TH1 *famnm1;
 };
 
 //------------------------------------------------------------------------------
@@ -189,6 +196,43 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
     "muonPT", "muonPT",
     "muon PT, GeV", "number of events",
     100, 0.0, 500.0);
+
+
+  //N-1 histograms
+  plots->fhtnm1 = result->AddHist1D(
+    "HTnm1", "HTnm1",
+    "HT n-1, GeV", "number of events",
+    100, 0.0, 5000.0);
+
+  plots->fjpt1nm1 = result->AddHist1D(
+    "jet1ptnm1", "jet1 P_{T} nm1",
+    "jet1 P_{T} n-1, GeV/c", "number of jet",
+    50, 0.0, 500.0);
+
+
+  plots->fjpt2nm1 = result->AddHist1D(
+    "jet2ptnm1", "jet2 P_{T} nm1",
+    "jet2 P_{T} n-1, GeV/c", "number of jet",
+    50, 0.0, 500.0);
+
+
+  plots->fjpt3nm1 = result->AddHist1D(
+    "jet3ptnm1", "jet3 P_{T} nm1",
+    "jet3 P_{T} n-1, GeV/c", "number of jet",
+    50, 0.0, 500.0);
+
+
+  plots->fjpt4nm1 = result->AddHist1D(
+    "jet4ptnm1", "jet4 P_{T} nm1",
+    "jet4 P_{T} n-1, GeV/c", "number of jet",
+    50, 0.0, 500.0);
+
+
+
+  plots->famnm1 = result->AddHist1D(
+    "jetalphamaxnm1", "jet alphamax nm1",
+    "alphamax n-1 4 leading jets", "number of jet",
+    50, 0.0, 1);
 
 
   // cut flow
@@ -385,6 +429,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
     vector<float> D0Med(njet);
     vector<float> THMed(njet);
     vector<int> ntrk1(njet);
+    vector<bool> goodjet(njet);
     float allpT,cutpT,cutpTp;
     int ntrkj;
     if(idbg>0) myfile<<" number of jets is "<<njet<<std::endl;
@@ -394,6 +439,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
       plots->fJetPT->Fill(jet->PT);
       alphaMax[i]=1.;
       alphaMaxp[i]=1.;
+      goodjet[i]=false;
       D0Max[i]=0.;
       D0Med[i]=0.;
       THMed[i]=0.;
@@ -401,16 +447,17 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
       cutpT=0;
       cutpTp=0;
       ntrkj=0;
+      
       for(int j=0;j<ntrk;j++) {
         trk = (Track*) branchTRK->At(j);
 	dR=DeltaR(jet->Eta,jet->Phi,trk->Eta,trk->Phi);
 	if(dR<ConeSize) {
-	  if(trk->PT>1) {
+	  if((trk->PT)>1) {
 	    ntrkj+=1;
 	    if((trk->D0)>D0Max[i]) D0Max[i]=(trk->D0);
 	    D0Med[i]=D0Med[i]+(trk->D0);
 	    THMed[i]=THMed[i]+trkTheta[j];
-	    allpT+=trk->PT;
+	    allpT+=(trk->PT);
 	    if((fabs(trk->ErrorD0))>0) {  // this is not implemented by default.  Hope I did it right!
 	      if(fabs((trk->D0)/(trk->ErrorD0))<D0SigCut) {
 	        cutpT+=trk->PT;
@@ -428,7 +475,9 @@ std::endl;
 	    }  // end first 4 jets
 	  }  //end pT cut of 1 GeV
         } //end in cone
-      }
+
+      }  //end loop over tracks
+      
       if(allpT>0) {
 	alphaMax[i]=cutpT/allpT;
 	alphaMaxp[i]=cutpTp/allpT;
@@ -441,8 +490,10 @@ std::endl;
 	D0Med[i]=D0Med[i]/ntrkj;
 	THMed[i]=THMed[i]/ntrkj;
       }
+      if((fabs(jet->Eta)<JETETACUT)&&(ntrk1[i]>0)) goodjet[i]=true;
+
       if(idbg>0) myfile<<"alpha max is "<<alphaMax[i]<<std::endl;
-    }
+    } // end loop over all jets
 
 
     // Analyse missing ET
@@ -494,24 +545,65 @@ std::endl;
     }
 
     // do pseudo emerging jets analysis
-    plots->Count->Fill("All",1);
+
+    // see if passes cuts
+    bool Pnjet=false;
+    bool Pht=false;
+    bool Ppt1=false;
+    bool Ppt2=false;
+    bool Ppt3=false;
+    bool Ppt4=false;
+    bool Pam=false;
+    if(njet>3) Pnjet=true;
     if(njet>3) {
+    if((ht->HT)>HTCUT) Pht=true;
+    jet = (Jet*) branchJet->At(0);
+    if(((jet->PT)>PT1CUT)&&goodjet[0]) Ppt1=true;
+    jet = (Jet*) branchJet->At(1);
+    if(((jet->PT)>PT2CUT)&&goodjet[1]) Ppt2=true;
+    jet = (Jet*) branchJet->At(2);
+    if(((jet->PT)>PT3CUT)&&goodjet[2]) Ppt3=true;
+    jet = (Jet*) branchJet->At(3);
+    if(((jet->PT)>PT4CUT)&&goodjet[3]) Ppt4=true;
+    if(nalpha>1) Pam=true;
+    }
+
+
+      //n-1 plots
+
+    if(Pnjet&&Ppt1&&Ppt2&&Ppt3&&Ppt4&&Pam) plots->fhtnm1->Fill(ht->HT);
+    jet = (Jet*) branchJet->At(0);
+    if(Pnjet&&Pht&&Ppt2&&Ppt3&&Ppt4&&Pam) plots->fjpt1nm1->Fill(jet->PT);
+    jet = (Jet*) branchJet->At(1);
+    if(Pnjet&&Pht&&Ppt1&&Ppt3&&Ppt4&&Pam) plots->fjpt2nm1->Fill(jet->PT);
+    jet = (Jet*) branchJet->At(2);
+    if(Pnjet&&Pht&&Ppt1&&Ppt2&&Ppt4&&Pam) plots->fjpt3nm1->Fill(jet->PT);
+    jet = (Jet*) branchJet->At(3);
+    if(Pnjet&&Pht&&Ppt1&&Ppt2&&Ppt3&&Pam) plots->fjpt4nm1->Fill(jet->PT);
+    /*
+    if(Pnjet&&Pht&&Ppt1&&Ppt2&&Ppt3&&Ppt4) {
+      plots->famnm1->Fill(alphaMax[0]);
+      plots->famnm1->Fill(alphaMax[1]);
+      plots->famnm1->Fill(alphaMax[2]);
+      plots->famnm1->Fill(alphaMax[3]);
+    }
+*/
+
+
+    plots->Count->Fill("All",1);
+    if(Pnjet) {
       plots->Count->Fill("4 jets",1);
-      if((ht->HT)>HTCUT) {
+      if(Pht) {
         plots->Count->Fill("HT",1);
-        jet = (Jet*) branchJet->At(0);
-	if(((jet->PT)>PT1CUT)&&(fabs(jet->Eta)<JETETACUT)&&(ntrk1[0]>0)) {
+	if(Ppt1) {
           plots->Count->Fill("PT1CUT",1);
-        jet = (Jet*) branchJet->At(1);
-	if(((jet->PT)>PT2CUT)&&(fabs(jet->Eta)<JETETACUT)&&(ntrk1[1]>0)) {
+	if(Ppt2) {
           plots->Count->Fill("PT2CUT",1);
-        jet = (Jet*) branchJet->At(2);
-	if(((jet->PT)>PT3CUT)&&(fabs(jet->Eta)<JETETACUT)&&(ntrk1[2]>0)) {
+	if(Ppt3) {
           plots->Count->Fill("PT3CUT",1);
-        jet = (Jet*) branchJet->At(3);
-	if(((jet->PT)>PT4CUT)&&(fabs(jet->Eta)<JETETACUT)&&(ntrk1[3]>0)) {
+	if(Ppt4) {
           plots->Count->Fill("PT4CUT",1);
-	  if(nalpha>1) {
+	  if(Pam) {
           plots->Count->Fill("AM",1);
 	  if(idbg>0) myfile<<" event passes all cuts"<<std::endl;
 	  }
