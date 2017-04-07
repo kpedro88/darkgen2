@@ -580,14 +580,14 @@ std::endl;
     if(Pnjet&&Pht&&Ppt1&&Ppt2&&Ppt4&&Pam) plots->fjpt3nm1->Fill(jet->PT);
     jet = (Jet*) branchJet->At(3);
     if(Pnjet&&Pht&&Ppt1&&Ppt2&&Ppt3&&Pam) plots->fjpt4nm1->Fill(jet->PT);
-    /*
+    
     if(Pnjet&&Pht&&Ppt1&&Ppt2&&Ppt3&&Ppt4) {
       plots->famnm1->Fill(alphaMax[0]);
       plots->famnm1->Fill(alphaMax[1]);
       plots->famnm1->Fill(alphaMax[2]);
       plots->famnm1->Fill(alphaMax[3]);
     }
-*/
+
 
 
     plots->Count->Fill("All",1);
