@@ -59,6 +59,7 @@ struct MyPlots
   TH1 *fnJet;
   TH1 *fnTRK;
   TH1 *ftrkPT;
+  TH1 *ftrkTH;
   TH1 *ftrkD0;
   TH1 *ftrkD0Error;
   TH1 *ftrkD0sig;
@@ -93,6 +94,12 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
     "track_pt", "track P_{T}",
     "track P_{T}, GeV/c", "number of tracks",
     50, 0.0, 50.0);
+
+
+  plots->ftrkTH = result->AddHist1D(
+    "track_th", "track TH2D",
+    "track TH2D", "number of tracks",
+    50, 0.0, 3.2);
 
   plots->ftrkD0 = result->AddHist1D(
     "track_d0", "track D_{0}",
@@ -203,6 +210,7 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
   plots->fHT->SetStats();
   plots->fJetPT->SetStats();
   plots->ftrkPT->SetStats();
+  plots->ftrkTH->SetStats();
   plots->ftrkD0->SetStats();
   plots->ftrkD0Error->SetStats();
   plots->ftrkD0sig->SetStats();
@@ -331,9 +339,27 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 
     // Analyse tracks
     int ntrk = branchTRK->GetEntriesFast();
+    vector<float> trkTheta(ntrk);
     plots->fnTRK->Fill(ntrk);
     for(int i=0;i<ntrk;i++ ) {
       trk = (Track*) branchTRK->At(i);
+      // doing this at the generator level because I am too lazy to figure out the formulas
+      // for the reconstructed
+      // this would not be the right formula for pileup or if there
+      // were a realistic vertex z distribution
+      prt = (GenParticle*) trk->Particle.GetObject();
+      float x1=prt->X;
+      float y1=prt->Y;
+      float z1=prt->Z;
+      float px1=prt->Px;
+      float py1=prt->Py;
+      float pz1=prt->Pz;
+      trkTheta[i]=0.;
+      if((fabs(prt->X)>0.001)||(fabs(prt->Y)>0.001)) {
+        float costt = (x1*px1+y1*py1+z1*pz1)/sqrt(x1*x1+y1*y1+z1*z1)/sqrt(px1*px1+py1*py1+pz1*pz1);
+        trkTheta[i]=acos(costt);
+      }
+      plots->ftrkTH->Fill(trkTheta[i]);
       plots->ftrkPT->Fill(trk->PT);
       plots->ftrkD0->Fill(trk->D0);
       plots->ftrkD0Error->Fill(fabs(trk->ErrorD0));  // for some reason, delphse pulls this from a caussian with a mean of zero, so half the time it is neg, which makes no sense to me
