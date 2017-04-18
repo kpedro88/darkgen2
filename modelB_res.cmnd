@@ -49,8 +49,8 @@ HiddenValley:Lambda=4.
 HiddenValley:pTminFSR = 4.4
 ! Settings for the dark sector - hadrons etc. Model A 
 4900101:m0 = 4				! dark quark mass = LambdaHV
-4900111:m0 = 20				! dark scalar (pion) mass
-4900211:m0 = 20
+4900111:m0 = 2				! dark scalar (pion) mass
+4900211:m0 = 2
 4900111:tau0 = 5			! dark scalar (pion) lifetime (in mm)
 4900211:tau0 = 5
 4900113:m0 = 8				! dark vector (rho) mass
