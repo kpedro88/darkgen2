@@ -68,6 +68,8 @@ struct MyPlots
   TH1 *felectronPT;
   TH1 *fmuonPT;
   TH1 *fHT;
+  TH1 *fdqd0;
+  TH1 *fdd0;
 
   TH1 *fhtnm1;
   TH1 *fjpt1nm1;
@@ -166,6 +168,17 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
     "jet_THmed", "jet th med",
     "theta2d med 4 leading jets", "number of jet",
     50, 0.0, 0.7);
+
+  plots->fdqd0 = result->AddHist1D(
+    "fdqd0", "dq d0",
+    "impact parameter for tracks in jets matched to dark quarks", "number of tracks",
+    50, -1., 1.);
+
+
+  plots->fdd0 = result->AddHist1D(
+    "fdd0", "d d0",
+    "impact parameter for tracks in jets matched to down quarks", "number of tracks",
+    50, -1., 1.);
 
 
 
@@ -432,11 +445,38 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
     vector<bool> goodjet(njet);
     float allpT,cutpT,cutpTp;
     int ntrkj;
+    vector<bool> adkq(njet);
+    vector<bool> adq(njet);
     if(idbg>0) myfile<<" number of jets is "<<njet<<std::endl;
     for(int i=0;i<njet;i++) {
       jet = (Jet*) branchJet->At(i);
       if(idbg>0) myfile<<"jet "<<i<<"  with pt, eta, phi of "<<jet->PT<<" "<<jet->Eta<<" "<<jet->Phi<<std::endl;
       plots->fJetPT->Fill(jet->PT);
+      adkq[i]=false;
+      adq[i]=false;
+      //see if it matches a dark or down quark
+      if(firstdq>0) {
+        prt2 = (GenParticle*) branchParticle->At(firstdq);
+        float dr1=DeltaR(jet->Eta,jet->Phi,prt2->Eta,prt2->Phi);
+	if(dr1<0.04) adkq[i]=true;
+		       }
+      if(firstadq>0) {
+        prt2 = (GenParticle*) branchParticle->At(firstadq);
+        float dr1=DeltaR(jet->Eta,jet->Phi,prt2->Eta,prt2->Phi);
+	if(dr1<0.04) adkq[i]=true;
+		       }
+      if(firstd>0) {
+        prt2 = (GenParticle*) branchParticle->At(firstd);
+        float dr1=DeltaR(jet->Eta,jet->Phi,prt2->Eta,prt2->Phi);
+	if(dr1<0.04) adq[i]=true;
+		       }
+      if(firstad>0) {
+        prt2 = (GenParticle*) branchParticle->At(firstad);
+        float dr1=DeltaR(jet->Eta,jet->Phi,prt2->Eta,prt2->Phi);
+	if(dr1<0.04) adq[i]=true;
+		       }
+
+      // calculate track based variables
       alphaMax[i]=1.;
       alphaMaxp[i]=1.;
       goodjet[i]=false;
@@ -453,6 +493,12 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 	dR=DeltaR(jet->Eta,jet->Phi,trk->Eta,trk->Phi);
 	if(dR<ConeSize) {
 	  if((trk->PT)>1) {
+	    if(adkq[i]) {
+	            plots->fdqd0->Fill(trk->D0);
+	    }
+	    if(adq[i]) {
+	            plots->fdd0->Fill(trk->D0);
+	    }
 	    ntrkj+=1;
 	    if((trk->D0)>D0Max[i]) D0Max[i]=(trk->D0);
 	    D0Med[i]=D0Med[i]+(trk->D0);
