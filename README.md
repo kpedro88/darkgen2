@@ -19,7 +19,7 @@ source init.(c)sh
 
 To run `pythiaTree` executable:
 ```
-./pythiaTree
+./pythiaTree.exe
 ```
 
 To run Delphes on the output:  

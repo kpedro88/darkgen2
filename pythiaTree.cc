@@ -51,10 +51,11 @@ int main(int argc, char* argv[]) {
   // Create the ROOT application environment.
   TApplication theApp("hist", &argc, argv);
 
-  // Create Pythia instance and set it up to generate hard QCD processes
-  // above pTHat = 20 GeV for pp collisions at 14 TeV.
   Pythia pythia;
-  pythia.readFile("junk.cmnd");
+  // Read in commands from external file.
+  string filename = "modelA_res.cmnd";
+  if(argc>1) filename = argv[1];
+  pythia.readFile(filename);
   pythia.init();
   int nEvent = pythia.mode("Main:numberOfEvents");
 
@@ -96,19 +97,6 @@ const char *partNames[npart] = {
     "unknown"
 };
 
-
- pdgName.emplace(11,"e");
-  pdgName.emplace(12,"nue");
- pdgName.emplace(13,"mu");
- pdgName.emplace(14,"numu");
-pdgName.emplace(211,"pi+-");
-pdgName.emplace(321,"K+-");
-pdgName.emplace(1114,"Delta-");
-pdgName.emplace(2112,"n");
-pdgName.emplace(2212,"p");
- pdgName.emplace(22,"gamma");
- pdgName.emplace(130,"KL");
-
  pdgNum.emplace(11,0);
  pdgNum.emplace(12,1);
  pdgNum.emplace(13,2);
@@ -122,22 +110,9 @@ pdgNum.emplace(2212,8);
  pdgNum.emplace(130,10);
 
 
-std::unordered_map<int,std::string>::iterator got;
-std::unordered_map<int,int>::iterator got2;
 for(int hh=0;hh<1000;hh++) {
-  got = pdgName.find(hh);
-  if(got == pdgName.end()) pdgName.emplace(hh,"unknown");
-  got2 = pdgNum.find(hh);
+  auto got2 = pdgNum.find(hh);
   if(got2 == pdgNum.end()) pdgNum.emplace(hh,npart-1);
- }
-
-
- std::cout<<" checking pdgName and pdgNum"<<std::endl;
-for(int hh=0;hh<1000;hh++) {
-  got = pdgName.find(hh);
-  got2 = pdgNum.find(hh);
-  //  std::cout<<hh<<" name  "<<(*got).first<<" "<<(*got).second<<std::endl;
-  //std::cout<<hh<<" num  "<<(*got2).first<<" "<<(*got2).second<<std::endl;
  }
 
 
