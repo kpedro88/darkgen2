@@ -3,15 +3,12 @@
 # Axel Naumann, 2011-03-03
 ######################################################################
 
-PYTHIA8 := /data/users/eno/pythia8224/
-
 # Need this to get SHAREDSUFFIX (e.g. dylib or so)
 -include $(PYTHIA8)/config.mk
 
 # A few variables used in this Makefile:
 EX           := hist tree pythiaTree pythiaBlank
 EXE          := $(addsuffix .exe,$(EX))
-PYTHIA8      ?= $(PWD)/..
 STATICLIB    := $(PYTHIA8)/lib/libpythia8.a $(PYTHIA8)/libHepMC.a
 SHAREDLIB    := $(PYTHIA8)/lib/libpythia8.$(SHAREDSUFFIX)
 DICTCXXFLAGS := -I$(PYTHIA8)/include -I$(PYTHIA8)
