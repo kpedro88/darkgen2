@@ -26,3 +26,8 @@ To run Delphes on the output:
 ```
 $DELPHES/DelphesHepMC delphes_card_CMS_imp.tcl haha.root hepmc.out
 ```
+
+To analyze results from Delphes:
+```
+root -l 'emgD.C("haha.root")'
+```

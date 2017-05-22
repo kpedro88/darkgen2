@@ -6,4 +6,4 @@ setenv PYTHIA8 $CUR_DIR/pythia8226
 setenv PYTHIA8DATA $PYTHIA8/share/Pythia8/xmldoc/
 setenv LD_LIBRARY_PATH ${PYTHIA8}/lib:${LD_LIBRARY_PATH}
 setenv DELPHES $CUR_DIR/Delphes-3.4.1
-
+setenv PATH ${DELPHES}:${PATH}

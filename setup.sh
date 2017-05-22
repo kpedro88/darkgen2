@@ -75,8 +75,6 @@ if [ -n "$INSTALL_DELPHES" ]; then
 	tar -zxf Delphes-3.4.1.tar.gz
 	cd Delphes-3.4.1
 	make
-	# link to card
-	ln -s $CUR_DIR/darkgen2/delphes_card_CMS_imp.tcl delphes_card_CMS_imp.tcl
 
 	# cleanup
 	cd $CUR_DIR
