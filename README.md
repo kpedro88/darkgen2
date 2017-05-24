@@ -17,14 +17,14 @@ cd scratch/darkgen2
 source init.(c)sh
 ```
 
-To run `pythiaTree` executable:
+To run `pythiaTree` executable (where `[card]` is one of the `.cmnd` text files):
 ```
-./pythiaTree.exe
+./pythiaTree.exe [card]
 ```
 
 To run Delphes on the output:  
 ```
-$DELPHES/DelphesHepMC delphes_card_CMS_imp.tcl haha.root hepmc.out
+DelphesHepMC delphes_card_CMS_imp.tcl haha.root hepmc.out
 ```
 
 To analyze results from Delphes:
