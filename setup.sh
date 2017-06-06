@@ -12,6 +12,8 @@ usage() {
 	$ECHO "-p            \tinstall Pythia 8.226"
 	$ECHO "-e            \tlink Pythia 8.226 with HepMC"
 	$ECHO "-d            \tinstall Delphes"
+	$ECHO "-m            \tinstall Madgraph5_aMC@NLO 2.5.4"
+	$ECHO "-n            \tnumber of cores for Madgraph (default=1)"
 	$ECHO "-h            \tdisplay this message and exit"
 	exit $1
 }
@@ -20,8 +22,10 @@ CUR_DIR=`pwd`
 INSTALL_PYTHIA=""
 INSTALL_HEPMC=""
 INSTALL_DELPHES=""
+INSTALL_MADGRAPH=""
+NUMCORES_MADGRAPH=1
 # check arguments
-while getopts "ped" opt; do
+while getopts "pedmnh" opt; do
 	case "$opt" in
 	p) INSTALL_PYTHIA=yes
 	;;
@@ -29,12 +33,16 @@ while getopts "ped" opt; do
 	;;
 	d) INSTALL_DELPHES=yes
 	;;
+	m) INSTALL_MADGRAPH=yes
+	;;
+	n) NUMCORES_MADGRAPH=$OPTARG
+	;;
 	h) usage 0
 	;;
 	esac
 done
 
-if [ -z "$INSTALL_PYTHIA" ] && [ -z "$INSTALL_DELPHES" ]; then
+if [ -z "$INSTALL_PYTHIA" ] && [ -z "$INSTALL_DELPHES" ] && [ -z "$INSTALL_MADGRAPH" ]; then
 	usage 1
 fi
 
@@ -72,11 +80,45 @@ if [ -n "$INSTALL_DELPHES" ]; then
 	cd $CUR_DIR
 	# get delphes source and compile
 	wget -q http://cp3.irmp.ucl.ac.be/downloads/Delphes-3.4.1.tar.gz
-	tar -zxf Delphes-3.4.1.tar.gz
+	tar -xzf Delphes-3.4.1.tar.gz
 	cd Delphes-3.4.1
 	make
 
 	# cleanup
 	cd $CUR_DIR
 	rm Delphes-3.4.1.tar.gz
+fi
+
+if [ -n "$INSTALL_MADGRAPH" ]; then
+	cd $CUR_DIR
+	# get madgraph source and unpack
+	wget -q https://launchpad.net/mg5amcnlo/2.0/2.5.x/+download/MG5_aMC_v2.5.4.tar.gz
+	tar -xzf MG5_aMC_v2.5.4.tar.gz
+
+	# configure
+	cd MG5_aMC_v2_5_4
+	echo "set auto_update 0" > mgconfigscript
+	echo "set automatic_html_opening False" >> mgconfigscript
+	echo "set output_dependencies internal" >> mgconfigscript
+	if [ ${NUMCORES_MADGRAPH} -eq 1 ]; then
+		echo "set run_mode 0" >> mgconfigscript
+	else
+		echo "set run_mode 2" >> mgconfigscript
+		echo "set nb_core" ${NUMCORES_MADGRAPH} >> mgconfigscript
+	fi
+	# MG5 pythia8 interface requires HepMC
+	if [ -n "$PYTHIA8" ] && [ -f $PYTHIA8/libHepMC.a ]; then
+		# hack to put things where MG5 expects them
+		mkdir -p $PYTHIA8/share/Pythia8/examples
+		sed 's~HEPMC2_INCLUDE=./~HEPMC2_INCLUDE='$PYTHIA8'~; s~HEPMC2_LIB=./~HEPMC2_LIB='$PYTHIA8~' $PYTHIA8/examples/Makefile.inc > $PYTHIA8/share/Pythia8/examples/Makefile.inc
+		echo "set pythia8_path" $PYTHIA8 >> mgconfigscript
+		echo "set hepmc_path" $PYTHIA8/HepMC >> mgconfigscript
+		echo "install mg5amc_py8_interface" >> mgconfigscript
+	fi
+	echo "save options" >> mgconfigscript
+	./bin/mg5_aMC mgconfigscript
+
+	# cleanup
+	cd $CUR_DIR
+	rm MG5_aMC_v2.5.4.tar.gz
 fi
