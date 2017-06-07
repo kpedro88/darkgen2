@@ -37,4 +37,4 @@ define vl = ve vm vt
 define vl~ = ve~ vm~ vt~
 import model sm
 generate p p > t t~ @1
-output ttbar
+output ttbar -nojpeg

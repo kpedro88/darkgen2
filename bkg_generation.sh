@@ -45,10 +45,10 @@ fi
 
 # check to make sure process or custom directory doesn't already exist
 if [ -d ${PROCNAME} ]; then
-  rm -rf ${PROCNAME}
+	rm -rf ${PROCNAME}
 fi
 if [ -d ${CUSTOMCARD} ]; then
-  rm -rf ${CUSTOMCARD}
+	rm -rf ${CUSTOMCARD}
 fi
 
 # Run the code-generation step to create the process directory
@@ -56,25 +56,33 @@ mg5_aMC ${CARDSDIR}/${PROCNAME}_proc_card.dat
 
 # move generic process directory to specific custom directory for this job
 if [ "$PROCNAME" != "$CUSTOMCARD" ]; then
-  mv -v ${PROCNAME} ${CUSTOMCARD}
+	mv -v ${PROCNAME} ${CUSTOMCARD}
 fi
 cd ${CUSTOMCARD}
 
 # Locating the run card
 
-if [ ! -e ${CARDSDIR}/${PROCNAME}_run_card.dat ]; then
-  $ECHO ${CARDSDIR}/${PROCNAME}_run_card.dat " does not exist!"
-  #exit 1;
-else
-  cp ${CARDSDIR}/${PROCNAME}_run_card.dat ./Cards/run_card.dat
-fi
+ORIGCARDS=(
+${PROCNAME}_run_card.dat \
+${PROCNAME}_param_card.dat \
+pythia8_card.dat
+)
+NEWCARDS=(
+run_card.dat \
+param_card.dat \
+pythia8_card.dat
+)
 
-if [ ! -e ${CARDSDIR}/${PROCNAME}_param_card.dat ]; then
-  $ECHO ${CARDSDIR}/${PROCNAME}_param_card.dat " does not exist!"
-  #exit 1;
-else
-  cp ${CARDSDIR}/${PROCNAME}_param_card.dat ./Cards/param_card.dat
-fi
+for ((i=0; i < ${#ORIGCARDS[@]}; i++)); do
+	ORIGCARD=${ORIGCARDS[$i]}
+	NEWCARD=${NEWCARDS[$i]}
+	if [ ! -e ${CARDSDIR}/${ORIGCARD} ]; then
+		$ECHO ${CARDSDIR}/${ORIGCARD} " does not exist!"
+		#exit 1;
+	else
+		cp ${CARDSDIR}/${ORIGCARD} ./Cards/${NEWCARD}
+	fi
+done
 
 # Generate events
 
@@ -82,11 +90,13 @@ echo "done" > makegrid.dat
 echo "./Cards/param_card.dat" >> makegrid.dat
 # Specific customization for this job (nevents, seed, mass values)
 if [ -e ${CARDSDIR}/${CUSTOMCARD}_customizecards.dat ]; then
-  cat ${CARDSDIR}/${CUSTOMCARD}_customizecards.dat >> makegrid.dat
-  echo "" >> makegrid.dat
+	cat ${CARDSDIR}/${CUSTOMCARD}_customizecards.dat >> makegrid.dat
+	echo "" >> makegrid.dat
 fi
 echo "done" >> makegrid.dat
 
+# reset shell var because run_shower doesn't work in tcsh
+export SHELL=bash
 cat makegrid.dat | ./bin/generate_events pilotrun
 
 $ECHO "End of job"
