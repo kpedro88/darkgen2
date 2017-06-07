@@ -7,6 +7,6 @@ setenv PYTHIA8 $MADGRAPH/HEPTools/pythia8
 setenv PYTHIA8DATA $PYTHIA8/share/Pythia8/xmldoc/
 setenv HEPMC $MADGRAPH/HEPTools/hepmc
 setenv DELPHES $CURDIR/Delphes-3.4.1
-setenv PATH ${DELPHES}:${MADGRAPH}:${PATH}
+setenv PATH ${DELPHES}:${MADGRAPH}/bin:${PATH}
 setenv LD_LIBRARY_PATH ${PYTHIA8}/lib:${DELPHES}:${LD_LIBRARY_PATH}
 setenv ROOT_INCLUDE_PATH ${DELPHES}/external:${ROOT_INCLUDE_PATH}
