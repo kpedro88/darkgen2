@@ -1,11 +1,11 @@
 # darkgen2
 
-First-time installation instructions (`-p` for Pythia8.226, `-e` for HepMC, `-d` for Delphes):
+First-time installation instructions (`-m` for MadGraph5 2.5.4, `-p` for Pythia8.226 + LHAPDF6 + HepMC + MG5aMC_PY8_interface, `-d` for Delphes 3.4.1):
 ```
 mkdir scratch
 cd scratch
 git clone git@github.com:kpedro88/darkgen2
-./darkgen2/setup.sh -p -e -d
+darkgen2/setup.sh -m -p -d
 cd darkgen2
 source init.(c)sh
 make pythiaTree
