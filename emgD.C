@@ -325,8 +325,6 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
     // Load selected branches with data from specified event
     treeReader->ReadEntry(entry);
 
-
-
     // Analyse gen particles
     int ngn = branchParticle->GetEntriesFast();
     int firstdq = -1;
@@ -448,8 +446,16 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
     vector<bool> adkq(njet);
     vector<bool> adq(njet);
     if(idbg>0) myfile<<" number of jets is "<<njet<<std::endl;
+    int nbjets = 0;
+    
     for(int i=0;i<njet;i++) {
       jet = (Jet*) branchJet->At(i);
+
+      bool isBJet = (jet->BTag>>1) & 0x1; 
+      // btag working points are accessed by bit-shifting
+      // use 0 for loose, 1 for medium, and 2 for tight
+      if (isBJet) nbjets++;
+
       if(idbg>0) myfile<<"jet "<<i<<"  with pt, eta, phi of "<<jet->PT<<" "<<jet->Eta<<" "<<jet->Phi<<std::endl;
       plots->fJetPT->Fill(jet->PT);
       adkq[i]=false;
@@ -699,9 +705,8 @@ void emgD(const char *inputFile)
   plots->Count->LabelsDeflate();
   plots->Count->LabelsOption("v");
 
-
   PrintHistograms(result, plots);
-
+  
   result->Write("results.root");
 
   myfile.close();
