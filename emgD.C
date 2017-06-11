@@ -561,8 +561,6 @@ std::endl;
 
       if(idbg>0) myfile<<"alpha max is "<<alphaMax[i]<<std::endl;
     } // end loop over all jets
-    if (nbjets > 0) {
-       std::cout << nbjets << " b-jets" << std::endl;}
     plots->fnBJet->Fill(nbjets);
 
 
