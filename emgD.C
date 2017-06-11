@@ -77,6 +77,9 @@ struct MyPlots
   TH1 *fjpt3nm1;
   TH1 *fjpt4nm1;
   TH1 *famnm1;
+
+  TH1 *fnBJet;
+  TH1 *fBJetPT;
 };
 
 //------------------------------------------------------------------------------
@@ -131,6 +134,7 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
 
   // book histograms for jets
 
+
   plots->fnJet = result->AddHist1D(
     "nJet", "number of jets",
     "number of jets", "number of events",
@@ -180,8 +184,15 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
     "impact parameter for tracks in jets matched to down quarks", "number of tracks",
     50, -1., 1.);
 
-
-
+  plots->fnBJet = result->AddHist1D(
+    "nBJet", "number of bjets",
+    "number of bjets", "number of events",
+    50, 0.0, 50.0);
+  
+  plots->fBJetPT = result->AddHist1D(
+    "bjet_pt", "bjet P_{T}",
+    "bjet P_{T}, GeV/c", "number of bjets",
+    50, 0.0, 500.0);
 
 
   // book more histograms
@@ -280,6 +291,8 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
   plots->fJetAM->SetStats();
   plots->fJetAMp->SetStats();
   plots->fJetTHmed->SetStats();
+
+  plots->fBJetPT->SetStats();
 }
 
 //------------------------------------------------------------------------------
@@ -451,10 +464,12 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
     for(int i=0;i<njet;i++) {
       jet = (Jet*) branchJet->At(i);
 
-      bool isBJet = (jet->BTag>>1) & 0x1; 
+      bool isBJet = (jet->BTag>>0) & 0x1; 
       // btag working points are accessed by bit-shifting
       // use 0 for loose, 1 for medium, and 2 for tight
-      if (isBJet) nbjets++;
+      if (isBJet) {
+         nbjets++;
+         plots->fBJetPT->Fill(jet->PT); }
 
       if(idbg>0) myfile<<"jet "<<i<<"  with pt, eta, phi of "<<jet->PT<<" "<<jet->Eta<<" "<<jet->Phi<<std::endl;
       plots->fJetPT->Fill(jet->PT);
@@ -546,6 +561,9 @@ std::endl;
 
       if(idbg>0) myfile<<"alpha max is "<<alphaMax[i]<<std::endl;
     } // end loop over all jets
+    if (nbjets > 0) {
+       std::cout << nbjets << " b-jets" << std::endl;}
+    plots->fnBJet->Fill(nbjets);
 
 
     // Analyse missing ET
