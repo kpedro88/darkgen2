@@ -1,0 +1,70 @@
+! This file contains commands to be read in for a Pythia8 run.
+! Lines not beginning with a letter or digit are comments.
+! Names are case-insensitive  -  but spellings-sensitive!
+! All masses & widths in GeV, lifetimes in millimeter
+
+! 1) Settings used in the main program.
+Main:numberOfEvents = 5000         	! number of events to generate
+
+! 2) Settings related to output in init(), next() and stat().
+Init:showChangedSettings = on      ! list changed settings
+Init:showChangedParticleData = on  ! list changed particle data
+Next:showScaleAndVertex = on
+Next:numberCount = 100             ! print message every n events
+Next:numberShowInfo = 10            ! print event information n times
+Next:numberShowProcess = 10         ! print process record n times
+Next:numberShowEvent = 10           ! print event record n times
+
+
+
+! Detector geometry
+ParticleDecays:xyMax = 30000 		! in mm/c
+ParticleDecays:zMax = 30000 		! in mm/c
+ParticleDecays:limitCylinder = on	! yes
+
+! Process selection
+HiddenValley:gg2TvTvbar = on		! gg fusion
+HiddenValley:qqbar2TvTvbar = on		! qqbar fusion
+
+! Settings for running coupling
+HiddenValley:alphaOrder = 1		! Let it run
+HiddenValley:Ngauge = 3             	! Number of dark QCD colours
+HiddenValley:nFlav = 7			! # flavours used for the running!
+HiddenValley:FSR = on
+HiddenValley:fragment = on
+
+! Mediator settings
+HiddenValley:spinFv = 0			! Spin of bi-fundamental res.
+4900001:m0 = 1000                   	! Mass of bi-fundamental resonance
+4900001:mWidth = 10                	! Width of bi-fundamental resonance
+4900002:m0 = 50000
+4900003:m0 = 50000
+4900004:m0 = 50000
+4900005:m0 = 50000
+4900006:m0 = 1000                     ! mediator to top quark (need down as well for decays)
+4900006:mWidth = 10
+
+! Model settings
+HiddenValley:Lambda=4.
+HiddenValley:pTminFSR = 4.4
+! Settings for the dark sector - hadrons etc. Model A 
+4900101:m0 = 4				! dark quark mass = LambdaHV.  all dark quarks mass degenerate
+4900111:m0 = 2				! dark scalar (pion) mass
+4900211:m0 = 2
+4900111:tau0 = 5			! dark scalar (pion) lifetime (in mm)
+4900211:tau0 = 5
+4900113:m0 = 8				! dark vector (rho) mass
+4900213:m0 = 8
+
+
+
+! Settings for dark meson decays. Best don't mess with these
+4900111:0:all =  1 1.0    91    1       -1      	! dark pion decay to down quarks
+4900113:0:all =  1 0.999  91  4900111  4900111	! dark vector to dark pions 99.9%
+4900113:addchannel = 1 0.001 91 1 -1	! dark vector to down quarks 0.1%
+
+
+4900211:oneChannel =  1 1.0    91    1       -1      	! dark pion decay to down quarks
+4900213:oneChannel =  1 0.999  91  4900211  4900211	! dark vector to dark pions 99.9%
+4900213:addchannel = 1 0.001 91 1 -1	! dark vector to down quarks 0.1%
+
