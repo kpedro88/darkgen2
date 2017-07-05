@@ -48,16 +48,17 @@ int nCharged, nNeutral, nTot;
 
 int main(int argc, char* argv[]) {
 
-  // Create the ROOT application environment.
-  TApplication theApp("hist", &argc, argv);
-
   Pythia pythia;
   // Read in commands from external file.
   string filename = "modelA_res.cmnd";
   if(argc>1) filename = argv[1];
+  cout << "pythia.readFile(" << filename << ");" << endl;
   pythia.readFile(filename);
   pythia.init();
   int nEvent = pythia.mode("Main:numberOfEvents");
+
+  // Create the ROOT application environment.
+  TApplication theApp("hist", &argc, argv);
 
   // Create file on which histogram(s) can be saved.
   TFile* outFile = new TFile("PythiaOutput.root", "RECREATE");
