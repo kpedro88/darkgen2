@@ -70,7 +70,7 @@ output [name] -nojpeg
 The included run_card has reasonable values for SM processes. As an explicit example of how to run the script:
 ```
 echo "set run_card nevents 10" > mg5cards/ttbar_customizecards.dat
-./bkg_generation.sh -p ttbar -d mg5cards
+./bkg_generation.sh -p ttbar -d $PWD/mg5cards
 ```
 
 ## Detector simulation

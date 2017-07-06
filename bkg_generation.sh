@@ -21,7 +21,7 @@ PROCNAME=ttbar
 CUSTOMCARD=""
 
 # check arguments
-while getopts "dpch" opt; do
+while getopts "d:p:c:h" opt; do
 	case "$opt" in
 	d) CARDSDIR=$OPTARG
 	;;
