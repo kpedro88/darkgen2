@@ -1,21 +1,16 @@
   
 #include "tdrstyle.C"
-#include "CMS_lumi.C"
 #include "TH1.h"
 #include "TH1F.h"
 
 int dolog=1;
 void Overlay() 
 { 
-  char* atitle = "2D impact parameter 80";
+  char* hname ="ptTopW";
+  char* atitle = "pt of W from top decay";
 
-  //  TFile *f1 = new TFile("SumHistsQQCD.root");
-  //TFile *f2 = new TFile("SumHistsWMCtSkim.root");  
-  //TFile *f3 = new TFile("SumHistsWSkim.root");  
-  TFile *f1 = new TFile("results.root");
-  //TFile *f2 = new TFile("SumHistsModelA.root");  
-  //TFile *f2 = new TFile("SumHistsDATA.root");  
-  //TFile *f2 = new TFile("SumHists80.root");  
+  TFile *f1 = new TFile("results_signal.root");
+  TFile *f2 = new TFile("results_ttbar.root");  
 
  
   gStyle->SetOptStat(0);
@@ -23,11 +18,7 @@ void Overlay()
   TString canvName = "Fig_";
   canvName += "hptdp_A_B";
   
-  if( writeExtraText ) canvName += "-prelim";
-  //if( iPos%10==0 ) canvName += "-out";
-  //else if( iPos%10==1 ) canvName += "-left";
-  //else if( iPos%10==2 )  canvName += "-center";
-  //else if( iPos%10==3 )  canvName += "-right";
+
   int W = 800;
   int H = 600;
   TCanvas* canv = new TCanvas(canvName,canvName,50,50,W,H);
@@ -89,7 +80,7 @@ void Overlay()
 
 
   std::cout<<"getting first"<<std::endl;
- TH1F *A_pt = static_cast<TH1F*>(f1->Get("fdqd0")->Clone());
+ TH1F *A_pt = static_cast<TH1F*>(f1->Get(hname)->Clone());
  A_pt->SetDirectory(0);
   double aaA = A_pt->Integral();
 std::cout<<" first entries is "<<aaA<<std::endl;
@@ -97,8 +88,7 @@ std::cout<<" first entries is "<<aaA<<std::endl;
 
 
   std::cout<<"getting second"<<std::endl;
-  TH1F *B_pt = static_cast<TH1F*>(f1->Get("fdd0")->Clone());
-  std::cout<<"ha"<<std::endl;
+  TH1F *B_pt = static_cast<TH1F*>(f2->Get(hname)->Clone());
   B_pt->SetDirectory(0);
   //  B_pt->Rebin(25);
   double aaB = B_pt->Integral();
@@ -152,25 +142,13 @@ C_pt->Scale(1/aaC);
  // lgd->AddEntry(C_pt, "data W to mu", "l");
 
 
-  lgd->AddEntry(A_pt, "dark quark jets", "l");
-  lgd->AddEntry(B_pt, "down quark jets", "l");
+  lgd->AddEntry(A_pt, "Signal", "l");
+  lgd->AddEntry(B_pt, "SM ttbar", "l");
   //lgd->AddEntry(C_pt, "ModelBx500", "l");
 
  lgd->Draw();
-    // Writing the lumi information and the CMS "logo"
-   // second parameter in example_plot is iPos, which drives the position of the CMS logo in the plot
-  // iPos=11 : top-left, left-aligned
-  // iPos=33 : top-right, right-aligned
-  // iPos=22 : center, centered
-  // mode generally : 
-  //   iPos = 10*(alignement 1/2/3) + position (1/2/3 = left/center/right)
-   
-  writeExtraText = true;       // if extra text
-  extraText  = "Preliminary";  // default extra text is "Preliminary"
 
-  int iPeriod = 0;    // 1=7TeV, 2=8TeV, 3=7+8TeV, 7=7+8+13TeV, 0=free form (uses lumi_sqrtS)
-   int iPos  = 11;
-  CMS_lumi( canv, iPeriod, iPos );
+   
   
   canv->Update();
   canv->RedrawAxis();
