@@ -80,6 +80,10 @@ struct MyPlots
 
   TH1 *fnBJet;
   TH1 *fBJetPT;
+
+  TH1 *fptTop;
+  TH1 *fptTopW;
+
 };
 
 //------------------------------------------------------------------------------
@@ -193,6 +197,21 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
     "bjet_pt", "bjet P_{T}",
     "bjet P_{T}, GeV/c", "number of bjets",
     50, 0.0, 500.0);
+
+
+  // plots about tops
+
+  plots->fptTop = result->AddHist1D(
+    "ptTop", "pt of top quarks",
+    "pt of top quarks", "number of events",
+    50, 0.0, 1000.0);
+
+
+  plots->fptTopW = result->AddHist1D(
+    "ptTopW", "pt of W from top quarks",
+    "pt of W from top quarks", "number of events",
+    50, 0.0, 1000.0);
+
 
 
   // book more histograms
@@ -315,6 +334,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 
   GenParticle *prt;
   GenParticle *prt2;
+  GenParticle *prtT;
   Track *trk;
   Jet *jet;
   MissingET *met;
@@ -342,45 +362,77 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
     int ngn = branchParticle->GetEntriesFast();
     int firstdq = -1;
     int firstadq = -1;
-    int firstd = -1;
-    int firstad = -1;
+    int firstq = -1;
+    int firstaq = -1;
+    vector<int> pointtops;
     for(int i=0;i<ngn;i++ ) {
       prt = (GenParticle*) branchParticle->At(i);
       int id=(prt->PID);
+
+      //find the initial daughters of the mediator
       if((id==4900101)&&(firstdq<0)) {
 	firstdq=i;
 	if(idbg>0) myfile<<" first dark quark"<<std::endl;
-	firstd=i-1;
-        prt2 = (GenParticle*) branchParticle->At(firstd);
-	//	if(abs(prt2->PID)!=1) std::cout<<"danger danger did not find d"<<std::endl;
+	firstq=i-1;
+        prt2 = (GenParticle*) branchParticle->At(firstq);
       }
       if((id==-4900101)&&(firstadq<0)) {
 	firstadq=i;
 	if(idbg>0) myfile<<" first dark antiquark"<<std::endl;
-	firstad=i-1;
-        prt2 = (GenParticle*) branchParticle->At(firstad);
-	//	if(abs(prt2->PID)!=1) std::cout<<"danger danger did not find antid"<<std::endl;
+	firstaq=i-1;
+        prt2 = (GenParticle*) branchParticle->At(firstaq);
       }
       if(idbg>20) {
 	  myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt of "<<prt->PT<<" status "<<prt->Status<<" mothers "<<prt->M1<<" "<<prt->M2<<std::endl;
       }
+
+      //to help with background studies, find top and anti top
+      if(abs(id)==6) {
+	if(idbg>0) {
+	  std::cout<<" top at particle "<<i<<std::endl;
+	  std::cout<<" daugters are particles "<<prt->D1<<" "<<prt->D2<<std::endl;
+	}
+	prtT = (GenParticle*) branchParticle->At(prt->D1);
+	int idpid1=abs(prtT->PID);
+	if(idbg>0) std::cout<<"daughter 1 has pid "<<idpid1<<std::endl;
+	prtT = (GenParticle*) branchParticle->At(prt->D2);
+	int idpid2=abs(prtT->PID);
+	if(idbg>0) std::cout<<"daughter 2 has pid "<<idpid2<<std::endl;
+
+	//find the one that decays to W
+	if((idpid1==24)||(idpid2==24) ) {
+	  pointtops.push_back(i);
+	  if(idbg>0) std::cout<<"choosing this top"<<std::endl;
+	}
+      }
+
     }
 
     if(idbg>0) {
-      if((firstdq<0)||(firstadq<0)||(firstd<0)||(firstad<0)) {
+      if((firstdq<0)||(firstadq<0)||(firstq<0)||(firstaq<0)) {
 	  std::cout<<"danger danger will robinson did not find initial partons"<<std::endl;
       } else {
         prt = (GenParticle*) branchParticle->At(firstdq);
         myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt, eta, phi  of "<<prt->PT<<" "<<prt->Eta<<" "<<prt->Phi<<std::endl;
-        prt = (GenParticle*) branchParticle->At(firstd);
+        prt = (GenParticle*) branchParticle->At(firstq);
         myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt, eta, phi  of "<<prt->PT<<" "<<prt->Eta<<" "<<prt->Phi<<std::endl;
         prt = (GenParticle*) branchParticle->At(firstadq);
         myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt, eta, phi  of "<<prt->PT<<" "<<prt->Eta<<" "<<prt->Phi<<std::endl;
-        prt = (GenParticle*) branchParticle->At(firstad);
+        prt = (GenParticle*) branchParticle->At(firstaq);
         myfile<<"genparticle "<<i<<" has pid "<<prt->PID<<" and pt, eta, phi  of "<<prt->PT<<" "<<prt->Eta<<" "<<prt->Phi<<std::endl;
       }
     }
 
+
+    //make some plots about the tops in the events
+    for(int i=0;i<pointtops.size();i++) {
+      prt = (GenParticle*) branchParticle->At(pointtops[i]);
+      plots->fptTop->Fill(prt->PT);
+      prtT = (GenParticle*) branchParticle->At(prt->D1);
+      if(abs(prtT->PID)==24) plots->fptTopW->Fill(prtT->PT);
+      prtT = (GenParticle*) branchParticle->At(prt->D2);
+      if(abs(prtT->PID)==24) plots->fptTopW->Fill(prtT->PT);
+    }
 
     // find all status 0 particles in initial cone
 
@@ -388,8 +440,8 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
       vector<int> motherpartons;
       if(firstdq>0) motherpartons.push_back(firstdq);
       if(firstadq>0) motherpartons.push_back(firstadq);
-      if(firstd>0) motherpartons.push_back(firstd);
-      if(firstad>0) motherpartons.push_back(firstad);
+      if(firstq>0) motherpartons.push_back(firstq);
+      if(firstaq>0) motherpartons.push_back(firstaq);
 
       for(int i=0;i<motherpartons.size();i++ ) {
 	myfile<<"finding stable particles in cone for particle "<<i<<std::endl;
@@ -486,13 +538,13 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
         float dr1=DeltaR(jet->Eta,jet->Phi,prt2->Eta,prt2->Phi);
 	if(dr1<0.04) adkq[i]=true;
 		       }
-      if(firstd>0) {
-        prt2 = (GenParticle*) branchParticle->At(firstd);
+      if(firstq>0) {
+        prt2 = (GenParticle*) branchParticle->At(firstq);
         float dr1=DeltaR(jet->Eta,jet->Phi,prt2->Eta,prt2->Phi);
 	if(dr1<0.04) adq[i]=true;
 		       }
-      if(firstad>0) {
-        prt2 = (GenParticle*) branchParticle->At(firstad);
+      if(firstaq>0) {
+        prt2 = (GenParticle*) branchParticle->At(firstaq);
         float dr1=DeltaR(jet->Eta,jet->Phi,prt2->Eta,prt2->Phi);
 	if(dr1<0.04) adq[i]=true;
 		       }
