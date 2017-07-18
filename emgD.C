@@ -58,6 +58,12 @@ struct MyPlots
   TH1 *fJetD0med;
   TH1 *fJetTHmed;
   TH1 *fnJet;
+  TH1 *fFatJetPT;
+  TH1 *fFatJetTau21;
+  TH1 *fFatJetTau32;
+  TH1 *fFatJetMSD;
+  TH1 *fFatJetMPR;
+  TH1 *fnFatJet;
   TH1 *fnTRK;
   TH1 *ftrkPT;
   TH1 *ftrkTH;
@@ -198,6 +204,39 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
     "bjet P_{T}, GeV/c", "number of bjets",
     50, 0.0, 500.0);
 
+  // book histograms for fat jets
+
+
+  plots->fnFatJet = result->AddHist1D(
+    "nFatJet", "number of fat jets",
+    "number of fat jets", "number of events",
+    50, 0.0, 50.0);
+
+  plots->fFatJetPT = result->AddHist1D(
+    "fatjet_pt", "fat jet P_{T}",
+    "fat jet P_{T}, GeV/c", "number of jet",
+    100, 0.0, 1000.0);
+
+  plots->fFatJetTau21 = result->AddHist1D(
+    "fatjet_tau21", "#tau_{21}",
+    "#tau_{21}", "number of jet",
+    50, 0.0, 1.0);
+
+  plots->fFatJetTau32 = result->AddHist1D(
+    "fatjet_tau32", "#tau_{32}",
+    "#tau_{32}", "number of jet",
+    50, 0.0, 1.0);
+
+  plots->fFatJetMSD = result->AddHist1D(
+    "fatjet_msd", "m_{SD}",
+    "m_{SD}, GeV/c^{2}", "number of jet",
+    50, 0.0, 500.0);
+
+  plots->fFatJetMPR = result->AddHist1D(
+    "fatjet_mpr", "m_{pruned}",
+    "m_{pruned}, GeV/c^{2}", "number of jet",
+    50, 0.0, 500.0);
+
 
   // plots about tops
 
@@ -312,6 +351,11 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
   plots->fJetTHmed->SetStats();
 
   plots->fBJetPT->SetStats();
+  plots->fFatJetPT->SetStats();
+  plots->fFatJetTau21->SetStats();
+  plots->fFatJetTau32->SetStats();
+  plots->fFatJetMSD->SetStats();
+  plots->fFatJetMPR->SetStats();
 }
 
 //------------------------------------------------------------------------------
@@ -321,6 +365,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
   TClonesArray *branchParticle = treeReader->UseBranch("Particle");
   TClonesArray *branchTRK = treeReader->UseBranch("Track");
   TClonesArray *branchJet = treeReader->UseBranch("Jet");
+  TClonesArray *branchFatJet = treeReader->UseBranch("FatJet");
   TClonesArray *branchMissingET = treeReader->UseBranch("MissingET");
   TClonesArray *branchScalarHT = treeReader->UseBranch("ScalarHT");
   TClonesArray *branchElectron = treeReader->UseBranch("Electron");
@@ -337,6 +382,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
   GenParticle *prtT;
   Track *trk;
   Jet *jet;
+  Jet *fatjet;
   MissingET *met;
   ScalarHT *ht;
   Electron *electron;
@@ -494,6 +540,18 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
       if((trk->ErrorD0)>0) plots->ftrkD0sig->Fill(fabs((trk->D0)/(trk->ErrorD0)));
     }
 
+
+    // plots for fat jets
+    int nfatjet = branchFatJet->GetEntriesFast();
+    plots->fnFatJet->Fill(nfatjet);
+    for(int i=0;i<nfatjet;i++) {
+      jet = (Jet*) branchFatJet->At(i);
+      plots->fFatJetPT->Fill(jet->PT);
+      plots->fFatJetTau21->Fill(jet->Tau[1]>0 ? jet->Tau[2]/jet->Tau[1] : 0.0);
+      plots->fFatJetTau32->Fill(jet->Tau[2]>0 ? jet->Tau[3]/jet->Tau[2] : 0.0);
+      plots->fFatJetMSD->Fill(jet->SoftDroppedP4[0].M());
+      plots->fFatJetMPR->Fill(jet->PrunedP4[0].M());
+    }
 
     // plots for jets and calculate displaced jet variables
     int njet = branchJet->GetEntriesFast();
