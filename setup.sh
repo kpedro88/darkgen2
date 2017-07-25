@@ -9,7 +9,7 @@ usage() {
 	$ECHO "setup.sh [options]"
 	$ECHO
 	$ECHO "Options:"
-	$ECHO "-m            \tinstall MadGraph5_aMC@NLO v2.5.4"
+	$ECHO "-m            \tinstall MadGraph5_aMC@NLO v2.5.5"
 	$ECHO "-p            \tinstall Pythia 8.226 (w/in MadGraph, includes LHAPDF6, HepMC, MG5aMC_PY8_interface)"
 	$ECHO "-d            \tinstall Delphes 3.4.1"
 	$ECHO "-n            \tnumber of cores for Madgraph (default=1)"
@@ -66,14 +66,14 @@ fi
 
 if [ -n "$INSTALL_MADGRAPH" ]; then
 	cd $CURDIR
-	$ECHO "Download MG5_aMC_v2.5.4.tar.gz"
-	wget -q https://launchpad.net/mg5amcnlo/2.0/2.5.x/+download/MG5_aMC_v2.5.4.tar.gz
+	$ECHO "Download MG5_aMC_v2.5.5.tar.gz"
+	wget  -q https://launchpad.net/mg5amcnlo/2.0/2.5.x/+download/MG5_aMC_v2.5.5.tar.gz 
 	if [ -n "$INSTALL_PYTHIA" ]; then
 		$ECHO "Download pythia8226.tgz"
 		wget -q http://home.thep.lu.se/~torbjorn/pythia8/pythia8226.tgz
 	fi
-	tar -xzf MG5_aMC_v2.5.4.tar.gz
-	cd MG5_aMC_v2_5_4
+	tar -xzf MG5_aMC_v2.5.5.tar.gz
+	cd MG5_aMC_v2_5_5
 
 	# configure
 	echo "set auto_update 0" > mgconfigscript
@@ -105,7 +105,7 @@ if [ -n "$INSTALL_MADGRAPH" ]; then
 
 	# cleanup
 	cd $CURDIR
-	rm MG5_aMC_v2.5.4.tar.gz
+	rm MG5_aMC_v2.5.5.tar.gz
 	rm pythia8226.tgz
 fi
 
