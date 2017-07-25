@@ -67,7 +67,7 @@ fi
 if [ -n "$INSTALL_MADGRAPH" ]; then
 	cd $CURDIR
 	$ECHO "Download MG5_aMC_v2.5.4.tar.gz"
-	wget -q https://launchpad.net/mg5amcnlo/2.0/2.5.x/+download/MG5_aMC_v2.5.4.tar.gz
+	wget -q http://madgraph.physics.illinois.edu/Downloads/MG5_aMC_v2.5.4.tar.gz
 	if [ -n "$INSTALL_PYTHIA" ]; then
 		$ECHO "Download pythia8226.tgz"
 		wget -q http://home.thep.lu.se/~torbjorn/pythia8/pythia8226.tgz

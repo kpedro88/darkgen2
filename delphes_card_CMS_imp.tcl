@@ -38,6 +38,7 @@ set ExecutionPath {
   MissingET
 
   NeutrinoFilter
+  NeutrinoKeeper
   GenJetFinder
   GenMissingET
   
@@ -615,6 +616,25 @@ module PdgCodeFilter NeutrinoFilter {
 
 }
 
+#####################
+# Neutrino Keeper
+#####################
+
+module PdgCodeFilter NeutrinoKeeper {
+
+  set InputArray Delphes/stableParticles
+  set OutputArray invisibleParticles
+  set Invert true
+  set PTMin 0.0
+
+  add PdgCode {12}
+  add PdgCode {14}
+  add PdgCode {16}
+  add PdgCode {-12}
+  add PdgCode {-14}
+  add PdgCode {-16}
+
+}
 
 #####################
 # MC truth jet finder
@@ -796,6 +816,7 @@ module UniqueObjectFinder UniqueObjectFinder {
 module TreeWriter TreeWriter {
 # add Branch InputArray BranchName BranchClass
   add Branch Delphes/allParticles Particle GenParticle
+  add Branch NeutrinoKeeper/invisibleParticles InvisibleParticles GenParticle
 
   add Branch ImpactParameterSmearing/tracks Track Track
   add Branch Calorimeter/towers Tower Tower
