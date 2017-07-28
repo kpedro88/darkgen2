@@ -70,7 +70,10 @@ if [ -n "$INSTALL_MADGRAPH" ]; then
 	wget -q http://madgraph.physics.illinois.edu/Downloads/MG5_aMC_v2.5.4.tar.gz
 	if [ -n "$INSTALL_PYTHIA" ]; then
 		$ECHO "Download pythia8226.tgz"
-		wget -q http://home.thep.lu.se/~torbjorn/pythia8/pythia8226.tgz
+#		wget -q http://home.thep.lu.se/~torbjorn/pythia8/pythia8226.tgz
+		xrdcp -s root://cmseos.fnal.gov//store/user/pedrok/pythia8226a.tgz .
+#		$ECHO "Download hepmc2.06.09.tgz"
+#		wget -q http://hepmc.web.cern.ch/hepmc/releases/hepmc2.06.09.tgz
 	fi
 	tar -xzf MG5_aMC_v2.5.4.tar.gz
 	cd MG5_aMC_v2_5_4
@@ -90,8 +93,9 @@ if [ -n "$INSTALL_MADGRAPH" ]; then
 	if [ -n "$INSTALL_PYTHIA" ]; then
 		BOOSTDIR=$LCGDIR/include/boost-1_62
 		ZLIBDIR=$LCGDIR/lib
+#		echo "install hepmc --hepmc_tarball=$CURDIR/hepmc2.06.09.tgz" >> mgconfigscript
 		echo "install lhapdf6 --with_boost=$BOOSTDIR --with_zlib=$ZLIBDIR" >> mgconfigscript
-		echo "install pythia8 --with_zlib=$ZLIBDIR --pythia8_tarball=$CURDIR/pythia8226.tgz" >> mgconfigscript
+		echo "install pythia8 --with_zlib=$ZLIBDIR --pythia8_tarball=$CURDIR/pythia8226a.tgz" >> mgconfigscript
 	fi
 
 	# for consistency
@@ -106,6 +110,7 @@ if [ -n "$INSTALL_MADGRAPH" ]; then
 	# cleanup
 	cd $CURDIR
 	rm MG5_aMC_v2.5.4.tar.gz
-	rm pythia8226.tgz
+#	rm hepmc2.06.09.tgz
+	rm pythia8226a.tgz
 fi
 
