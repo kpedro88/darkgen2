@@ -13,8 +13,6 @@ source init.(c)sh
 make pythiaTree
 ```
 
-Note: the current version of the setup script copies a patched Pythia8 tarball over XRootD, so initialize your grid proxy if needed (`voms-proxy-init -voms cms`).
-
 Environment setup instructions (every time):
 ```
 cd scratch/darkgen2
