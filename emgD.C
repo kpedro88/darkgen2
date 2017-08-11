@@ -1,3 +1,4 @@
+
 /*
 Simple macro showing how to access branches from the delphes output root file,
 loop over events, store histograms in a root file and print them as image files.
