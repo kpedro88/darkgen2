@@ -23,7 +23,13 @@ float PT3CUT = 200;
 float PT4CUT = 100;
 float JETETACUT = 2;
 float ALPHAMAXCUT = 0.1;
-
+float TopPTcut = 225;
+float WPTcut = 150;
+float electronPTcut = 75;
+float muonPTcut = 75;
+float jetPTcut = 100;
+float BjetPTcut = 150;
+float METcut = 75;
 std::ofstream myfile;
 
 
@@ -424,7 +430,8 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 	// Loop over all events
 
 	int ijloop = allEntries;
-	if(idbg>0) ijloop = 10;
+	if(idbg>0) ijloop = 100;
+        float passing_events = 0;
 	for(entry = 0; entry < ijloop; ++entry)
 	{
 		if(idbg>0) myfile<<std::endl;
@@ -490,19 +497,23 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 
 
 		//make some plots about the tops in the events
+                float TopPT = 0;
+                float WPT =0;
 		for(int i=0;i<pointtops.size();i++) {
 			//get W
 			GenParticle* w = NULL;
 			GenParticle* b = NULL;
 
-
+         
 			prt = (GenParticle*) branchParticle->At(pointtops[i]);
 			plots->fptTop->Fill(prt->PT);
+                        TopPT = fabs(prt->PT);
 			prtT = (GenParticle*) branchParticle->At(prt->D1);
 
 			//check first daughter particle
 			if(abs(prtT->PID) == 24){//check for W
 				plots->fptTopW->Fill(prtT->PT);
+                                WPT = fabs(prtT->PT);
 				w = prtT;
 			} else if (abs(prtT->PID) == 5){//check for b
 				b = prtT;
@@ -513,6 +524,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 			prtT = (GenParticle*) branchParticle->At(prt->D2);
 			if(abs(prtT->PID)==24){//check for W
 				plots->fptTopW->Fill(prtT->PT);
+                                WPT = fabs(prtT->PT);
 				w = prtT;
 			} else if (abs(prtT->PID) == 5){//check for b
 				b = prtT;
@@ -608,10 +620,11 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 		}
 
 
+
 		// plots for jets and calculate displaced jet variables
 		int njet = branchJet->GetEntriesFast();
 		plots->fnJet->Fill(njet);
-
+                
 		vector<float> alphaMax(njet);  // not really alpha max but best we can do here
 		vector<float> alphaMaxp(njet);
 		vector<float> D0Max(njet);
@@ -625,7 +638,9 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 		vector<bool> adq(njet);
 		if(idbg>0) myfile<<" number of jets is "<<njet<<std::endl;
 		int nbjets = 0;
-
+                
+		float JetPT = 0;
+                float BJetPT = 0;
 		for(int i=0;i<njet;i++) {//Loop over jets
 			jet = (Jet*) branchJet->At(i);
 
@@ -635,10 +650,12 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 			if (isBJet) {
 				nbjets++;
 				plots->fBJetPT->Fill(jet->PT);
+                                BJetPT = fabs(jet->PT);
 			}
 
 			if(idbg>0) myfile<<"jet "<<i<<"  with pt, eta, phi of "<<jet->PT<<" "<<jet->Eta<<" "<<jet->Phi<<std::endl;
 			plots->fJetPT->Fill(jet->PT);
+                        JetPT = fabs(jet->PT);
 			adkq[i]=false;
 			adq[i]=false;
 			//see if it matches a dark or down quark
@@ -738,11 +755,13 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 		plots->fnBJet->Fill(nbjets);
 
 
-		// Analyse missing ET
+		// Analyse missing ET 
+                float metvalue = 0;
 		if(branchMissingET->GetEntriesFast() > 0)
 		{
 			met = (MissingET*) branchMissingET->At(0);
 			plots->fMissingET->Fill(met->MET);
+                        metvalue = fabs(met->MET);
 		}
                 
                 if(branchGenMissingET->GetEntriesFast() > 0){
@@ -757,20 +776,23 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 			plots->fHT->Fill(ht->HT);
 		}
 
-
+                float electronPT = 0;
 		// Loop over all electrons in event
 		for(i = 0; i < branchElectron->GetEntriesFast(); ++i)
 		{
 			electron = (Electron*) branchElectron->At(i);
 			plots->felectronPT->Fill(electron->PT);
+                        electronPT = fabs(electron->PT);
 		}
-
-
+		//if (idbg>0) cout<<"electron pt for this event is "<< electronPT << " GeV" << endl; 
+		//float muonPT = 0;
 		// Loop over all muons in event
+                float muonPT = 0;
 		for(i = 0; i < branchMuon->GetEntriesFast(); ++i)
 		{
 			muon = (Muon*) branchMuon->At(i);
 			plots->fmuonPT->Fill(muon->PT);
+                        muonPT = fabs(muon->PT);
 		}
 
 
@@ -859,9 +881,11 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 				}
 			}
 		}
-
+		if ((electronPT > electronPTcut || electronPT == 0) &&(muonPT == 0 || muonPT > muonPTcut)&&(BJetPT > BjetPTcut || BJetPT == 0)&&(JetPT > jetPTcut || JetPT == 0)&& (TopPT > TopPTcut || TopPT == 0) && (WPT > WPTcut || WPT == 0) && (metvalue > METcut || metvalue == 0)) passing_events = passing_events + 1; 
+		cout << "there are " << passing_events <<" passing events"<<endl;
 	}
 }
+ 
 
 //------------------------------------------------------------------------------
 
