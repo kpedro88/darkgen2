@@ -23,13 +23,13 @@ float PT3CUT = 200;
 float PT4CUT = 100;
 float JETETACUT = 2;
 float ALPHAMAXCUT = 0.1;
-float TopPTcut = 225;
-float WPTcut = 150;
-float electronPTcut = 75;
-float muonPTcut = 75;
-float jetPTcut = 100;
-float BjetPTcut = 150;
-float METcut = 75;
+float TopPTcut = 150;
+float WPTcut = 100;
+float electronPTcut = 30;
+float muonPTcut = 30;
+float jetPTcut = 75;
+float BjetPTcut = 75;
+float METcut = 0;
 std::ofstream myfile;
 
 
@@ -693,7 +693,6 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 			cutpT=0;
 			cutpTp=0;
 			ntrkj=0;
-
 			for(int j=0;j<ntrk;j++) {
 				trk = (Track*) branchTRK->At(j);
 				dR=DeltaR(jet->Eta,jet->Phi,trk->Eta,trk->Phi);
@@ -745,8 +744,8 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 			if((fabs(jet->Eta)<JETETACUT)&&(ntrk1[i]>0)) goodjet[i]=true;
 
 			if(idbg>0) myfile<<"alpha max is "<<alphaMax[i]<<std::endl;
-
-
+                         
+                        
 			if (adkq[i]) {
 			  jet = (Jet*) branchJet->At(adkq[i]);
                             plots->DarkJetPT->Fill(jet->PT);
@@ -809,7 +808,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 			if(alphaMax[i]<ALPHAMAXCUT) {
 				nalpha+=1;
 				if(idbg>0) myfile<<" jet "<<i<<" passes alphamax cut with alphamax of "<<alphaMax[i]<<std::endl;
-			}
+			} 
 		}
 
 		// do pseudo emerging jets analysis
@@ -881,7 +880,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
 				}
 			}
 		}
-		if ((electronPT > electronPTcut || electronPT == 0) &&(muonPT == 0 || muonPT > muonPTcut)&&(BJetPT > BjetPTcut || BJetPT == 0)&&(JetPT > jetPTcut || JetPT == 0)&& (TopPT > TopPTcut || TopPT == 0) && (WPT > WPTcut || WPT == 0) && (metvalue > METcut || metvalue == 0)) passing_events = passing_events + 1; 
+		if ((electronPT > electronPTcut || electronPT == 0) &&(muonPT == 0 || muonPT > muonPTcut)&&(BJetPT > BjetPTcut || BJetPT == 0)&&(JetPT > jetPTcut || JetPT == 0)&& (TopPT > TopPTcut) && (nalpha>0) && (WPT > WPTcut) && (metvalue > METcut || metvalue == 0)) passing_events = passing_events + 1; 
 		cout << "there are " << passing_events <<" passing events"<<endl;
 	}
 }
