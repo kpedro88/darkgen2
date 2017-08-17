@@ -23,12 +23,12 @@ float PT3CUT = 200;
 float PT4CUT = 100;
 float JETETACUT = 2;
 float ALPHAMAXCUT = 0.1;
-float TopPTcut = 150;
-float WPTcut = 100;
-float electronPTcut = 30;
-float muonPTcut = 30;
-float jetPTcut = 75;
-float BjetPTcut = 75;
+float TopPTcut = 200;
+float WPTcut = 150;
+float electronPTcut = 50;
+float muonPTcut = 50;
+float jetPTcut = 100;
+float BjetPTcut = 100;
 float METcut = 0;
 std::ofstream myfile;
 
