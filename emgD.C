@@ -53,6 +53,8 @@ struct MyPlots
     TH1 *Count;
     TH1 *fJetPT;
     TH1 *fJetAM;
+    TH1 *fDarkJetAM;
+    TH1 *fBJetAM;
     TH1 *fJetAMp;
     TH1 *fJetD0max;
     TH1 *fJetD0med;
@@ -152,6 +154,16 @@ void BookHistograms(ExRootResult *result, MyPlots *plots)
 
     plots->fJetAM = result->AddHist1D(
             "jet_alphamax", "jet alphamax",
+            "alphamax 4 leading jets", "number of jet",
+            50, 0.0, 1);
+
+    plots->fDarkJetAM = result->AddHist1D(
+            "darkjet_alphamax", "dark jet alphamax",
+            "alphamax 4 leading jets", "number of jet",
+            50, 0.0, 1);
+
+    plots->fBJetAM = result->AddHist1D(
+            "bjet_alphamax", "b jet alphamax",
             "alphamax 4 leading jets", "number of jet",
             50, 0.0, 1);
 
@@ -555,6 +567,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
         int ntrkj;
         vector<bool> adkq(njet);
         vector<bool> adq(njet);
+        vector<bool> abq(njet);
         if(idbg>0) myfile<<" number of jets is "<<njet<<std::endl;
         int nbjets = 0;
         int ndarkjets = 0;
@@ -568,6 +581,7 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
             if (isBJet) {
                 nbjets++;
                 plots->fBJetPT->Fill(jet->PT); }
+            abq[i] = isBJet;
 
             if(idbg>0) myfile<<"jet "<<i<<"  with pt, eta, phi of "<<jet->PT<<" "<<jet->Eta<<" "<<jet->Phi<<std::endl;
             plots->fJetPT->Fill(jet->PT);
@@ -580,7 +594,6 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
                 if(dr1<0.04) { 
                     adkq[i]=true;
                     plots->fDarkJetPT->Fill(jet->PT);
-                    ndarkjets++;
                 }
             }
             if(firstadq>0) {
@@ -589,7 +602,6 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
                 if(dr1<0.04) { 
                     adkq[i]=true;
                     plots->fDarkJetPT->Fill(jet->PT);
-                    ndarkjets++;
                 }
             }
             if(firstq>0) {
@@ -668,8 +680,6 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
             if(idbg>0) myfile<<"alpha max is "<<alphaMax[i]<<std::endl;
         } // end loop over all jets
         plots->fnBJet->Fill(nbjets);
-        plots->fnDarkJet->Fill(ndarkjets);
-
 
         // Analyse missing ET
         if(branchMissingET->GetEntriesFast() > 0)
@@ -709,6 +719,8 @@ void AnalyseEvents(ExRootTreeReader *treeReader, MyPlots *plots)
         int iloop=min(4,njet);
         for(int i=0;i<iloop;i++) {
             plots->fJetAM->Fill(alphaMax[i]);
+            if (adkq[i]) plots->fDarkJetAM->Fill(alphaMax[i]);
+            if (abq[i]) plots->fBJetAM->Fill(alphaMax[i]);
             plots->fJetAMp->Fill(alphaMaxp[i]);
             plots->fJetD0max->Fill(D0Max[i]);
             plots->fJetD0med->Fill(D0Med[i]);

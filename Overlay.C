@@ -6,9 +6,9 @@
 int dolog=1;
 void Overlay() 
 { 
-    char* hname ="jet_THmed";
-    char* atitle = "jet th med";
-    int scaletoxs = 1;
+    char* hname ="fatjet_tau32";
+    char* atitle = "fat jet tau32";
+    int scaletoxs = 0;
     float ttbarxs = 888000.; // in fb
     float darkxs = 18.45402; // in fb
     float lumi = 100.; // fb^-1
@@ -36,10 +36,10 @@ void Overlay()
     canv->SetBorderMode(0);
     canv->SetFrameFillStyle(0);
     canv->SetFrameBorderMode(0);
-    canv->SetLeftMargin( L/W );
-    canv->SetRightMargin( R/W );
-    canv->SetTopMargin( T/H );
-    canv->SetBottomMargin( B/H );
+    //canv->SetLeftMargin( L/W );
+    //canv->SetRightMargin( R/W );
+    //canv->SetTopMargin( T/H );
+    //canv->SetBottomMargin( B/H );
     canv->SetTickx(0);
     canv->SetTicky(0);
 
