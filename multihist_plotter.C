@@ -13,7 +13,7 @@ void multihist_plotter(char* atitle, char* sigfile, std::vector<char*> sighnames
  
     // option to scale to cross section (rather than just 1)
     // along with xs and lumi values to use to do so
-    int scaletoxs = 0;
+    int scaletoxs = 1;
     float ttbarxs = 888000.; // in fb
     float darkxs = 18.45402; // in fb
     float lumi = 100.; // fb^-1
@@ -41,10 +41,10 @@ void multihist_plotter(char* atitle, char* sigfile, std::vector<char*> sighnames
     canv->SetBorderMode(0);
     canv->SetFrameFillStyle(0);
     canv->SetFrameBorderMode(0);
-    //canv->SetLeftMargin( L/W );
-    //canv->SetRightMargin( R/W );
-    //canv->SetTopMargin( T/H );
-    //canv->SetBottomMargin( B/H );
+    canv->SetLeftMargin( L/W );
+    canv->SetRightMargin( R/W );
+    canv->SetTopMargin( T/H );
+    canv->SetBottomMargin( B/H );
     canv->SetTickx(0);
     canv->SetTicky(0);
 
@@ -55,7 +55,7 @@ void multihist_plotter(char* atitle, char* sigfile, std::vector<char*> sighnames
 
     int n_ = 2;
 
-    float x1_l = 1.2;
+    float x1_l = 1.1;
     //  float x1_l = 0.75;
     float y1_l = 0.80;
 
@@ -114,15 +114,25 @@ void multihist_plotter(char* atitle, char* sigfile, std::vector<char*> sighnames
     }
 
 
+    float titlesize = 0.05;
+    float x_offset = 1.0;
+    float y_offset = 0.7;
     float maximum = *std::max_element(maxima.begin(), maxima.end());
     std::cout << "Final maximum is " << maximum << std::endl;
     for (int i = 0; i < signal_hists.size(); i++) {
         signal_hists[i]->SetMaximum(maximum*1.3);
 
-        signal_hists[i]->GetYaxis()->SetTitle("percent ");  
-        signal_hists[i]->GetYaxis()->SetTitleSize(0.05);  
+        if (scaletoxs) {
+            signal_hists[i]->GetYaxis()->SetTitle("Number");
+        }
+        else {
+            signal_hists[i]->GetYaxis()->SetTitle("Percent");  
+        }
+        signal_hists[i]->GetYaxis()->SetTitleSize(titlesize);  
+        signal_hists[i]->GetYaxis()->SetTitleOffset(y_offset);  
         signal_hists[i]->GetXaxis()->SetTitle(atitle);  
-        signal_hists[i]->GetXaxis()->SetTitleSize(0.05);  
+        signal_hists[i]->GetXaxis()->SetTitleSize(titlesize);  
+        signal_hists[i]->GetXaxis()->SetTitleOffset(x_offset);  
 
         signal_hists[i]->SetLineColor(sig_colors[i]);
         signal_hists[i]->SetLineWidth(3);
@@ -131,6 +141,18 @@ void multihist_plotter(char* atitle, char* sigfile, std::vector<char*> sighnames
     }
 
     for (int i = 0; i < bkg_hists.size(); i++) {
+        if (scaletoxs) {
+            bkg_hists[i]->GetYaxis()->SetTitle("Number");
+        }
+        else {
+            bkg_hists[i]->GetYaxis()->SetTitle("Percent");  
+        }
+        bkg_hists[i]->GetYaxis()->SetTitleSize(titlesize);  
+        bkg_hists[i]->GetYaxis()->SetTitleOffset(y_offset);  
+        bkg_hists[i]->GetXaxis()->SetTitle(atitle);  
+        bkg_hists[i]->GetXaxis()->SetTitleSize(titlesize);  
+        bkg_hists[i]->GetXaxis()->SetTitleOffset(x_offset);  
+
         bkg_hists[i]->SetLineColor(bkg_colors[i]);
         bkg_hists[i]->SetLineWidth(3);
         bkg_hists[i]->SetStats(0);
