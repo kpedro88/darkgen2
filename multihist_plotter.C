@@ -4,20 +4,8 @@
 #include "TH1F.h"
 
 int dolog=1;
-void multihist_plotter() 
+void multihist_plotter(char* atitle, char* sigfile, std::vector<char*> sighnames, char* bkgfile, std::vector<char*> bkghnames)
 { 
-    // create vector with signal histogram names
-    // add push_back lines to input the names of the histograms
-    // you're interested in plotting from the signal samples
-    std::vector<char*> sighnames;
-    sighnames.push_back("bjet_alphamax");
-    sighnames.push_back("darkjet_alphamax");
-    // create vector with background histogram names
-    // works same as the signal vector, above
-    std::vector<char*> bkghnames;
-    bkghnames.push_back("jet_alphamax");
-
-    char* atitle = "jet_alphamax";
      
     // lists of colors for the different histograms
     int sig_colors[4] = {2,3,4,5};
@@ -49,7 +37,6 @@ void multihist_plotter()
     float L = 0.12*W;
     float R = 0.04*W;
 
-    //canv = new TCanvas(canvName,canvName,50,50,W,H);
     canv->SetFillColor(0);
     canv->SetBorderMode(0);
     canv->SetFrameFillStyle(0);
@@ -96,10 +83,12 @@ void multihist_plotter()
             signal_hists[i]->Scale((darkxs*lumi)/integral);
             maxima.push_back(signal_hists[i]->GetMaximum());
             //std::cout << "Maximum is " << signal_hists[i]->GetMaximum() << std::endl;}
+        }
         else { 
             signal_hists[i]->Scale(1./integral);
             maxima.push_back(signal_hists[i]->GetMaximum());
             //std::cout << "Maximum is " << signal_hists[i]->GetMaximum() << std::endl;}
+        }
     }
 
 
@@ -116,17 +105,19 @@ void multihist_plotter()
             bkg_hists[i]->Scale((darkxs*lumi)/integral);
             maxima.push_back(bkg_hists[i]->GetMaximum());
             //std::cout << "Maximum is " << bkg_hists[i]->GetMaximum() << std::endl;}
+        }
         else { 
             bkg_hists[i]->Scale(1./integral);
             maxima.push_back(bkg_hists[i]->GetMaximum());
             //std::cout << "Maximum is " << bkg_hists[i]->GetMaximum() << std::endl;}
+        }
     }
 
 
-    float max = *std::max_element(maxima.begin(), maxima.end());
-    std::cout << "Final maximum is " << max << std::endl;
+    float maximum = *std::max_element(maxima.begin(), maxima.end());
+    std::cout << "Final maximum is " << maximum << std::endl;
     for (int i = 0; i < signal_hists.size(); i++) {
-        signal_hists[i]->SetMaximum(max*1.3);
+        signal_hists[i]->SetMaximum(maximum*1.3);
 
         signal_hists[i]->GetYaxis()->SetTitle("percent ");  
         signal_hists[i]->GetYaxis()->SetTitleSize(0.05);  

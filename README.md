@@ -93,3 +93,20 @@ To analyze results from Delphes:
 ```
 root -l 'emgD.C("signal.root")'
 ```
+
+## Plotting
+
+To plot histograms created by the analyzer, use multihist_plotter.C. This takes
+five parameters: 
+1. ```char* atitle```: The title of the canvas (which will be incorporated into the filename)
+2. ```char* sigfile```: The path to the signal output from the analyzer 
+3. ```std::vector<char*> sighnames```: A vector of the names of the histograms to be plotted from the signal output 
+4. ```char* bkgfile```: The path to the background output from the analyzer
+5. ```std::vector<char*> bkghnames```: A vector of the names of the histograms to be plotted from
+the background output.
+
+An example command to plot b jet alphamax and dark jet alphamax from signal against
+all jet alphamax from background:
+```
+root -l 'multihist_plotter.C("jet_alphamax","results_signal.root",{"bjet_alphamax","darkjet_alphamax"},"results_ttbar.root",{"jet_alphamax"})'
+```
