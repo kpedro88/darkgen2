@@ -14,7 +14,7 @@ set ExecutionPath {
   MuonMomentumSmearing
 
   TrackMerger
-  ImpactParameterSmearing
+  TrackSmearing
  
   ECal
   HCal
@@ -210,14 +210,13 @@ module Merger TrackMerger {
 # Track impact parameter smearing                                                                   
 ################################                                                                    
 
-module ImpactParameterSmearing ImpactParameterSmearing {
+module TrackSmearing TrackSmearing {
   set InputArray TrackMerger/tracks
+#  set BeamSpotInputArray BeamSpotFilter/beamSpotParticle
   set OutputArray tracks
+#  set ApplyToPileUp true
 
-
-# absolute impact parameter smearing formula (in mm) as a function of pt and eta                    
-    set ResolutionFormula {0.016 + 0.16/pt}
-
+  source trackResolution.tcl
 }
 
 
@@ -228,7 +227,7 @@ module ImpactParameterSmearing ImpactParameterSmearing {
 
 module SimpleCalorimeter ECal {
   set ParticleInputArray ParticlePropagator/stableParticles
-  set TrackInputArray ImpactParameterSmearing/tracks
+  set TrackInputArray TrackSmearing/tracks
 
   set TowerOutputArray ecalTowers
   set EFlowTrackOutputArray eflowTracks
@@ -818,7 +817,7 @@ module TreeWriter TreeWriter {
   add Branch Delphes/allParticles Particle GenParticle
   add Branch NeutrinoKeeper/invisibleParticles InvisibleParticles GenParticle
 
-  add Branch ImpactParameterSmearing/tracks Track Track
+  add Branch TrackSmearing/tracks Track Track
   add Branch Calorimeter/towers Tower Tower
 
   add Branch HCal/eflowTracks EFlowTrack Track
