@@ -1,0 +1,9 @@
+universe = vanilla
+Executable = run_bkg_gen.sh
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+Requirements = TARGET.FileSystemDomain == "privnet" && machine != "r510-0-1.privnet"
+Output = generation_$(cluster)_$(process).stdout
+Error = generation_$(cluster)_$(process).stderr
+Log = generation_$(cluster)_$(process).condor
+Queue 1
