@@ -49,6 +49,7 @@ set ExecutionPath {
 
   JetFlavorAssociation
 
+  TrackCountingBTagging
   BTagging
   TauTagging
 
@@ -215,6 +216,9 @@ module TrackSmearing TrackSmearing {
 #  set BeamSpotInputArray BeamSpotFilter/beamSpotParticle
   set OutputArray tracks
 #  set ApplyToPileUp true
+
+  # magnetic field
+  set Bz 3.8
 
   source trackResolution.tcl
 }
@@ -743,6 +747,34 @@ module JetFlavorAssociation JetFlavorAssociation {
 
 }
 
+############################
+# b-tagging (track counting)
+############################
+
+module TrackCountingBTagging TrackCountingBTagging {
+  set JetInputArray JetEnergyScale/jets
+  set TrackInputArray HCal/eflowTracks
+
+  set BitNumber 0
+
+  # maximum distance between jet and track
+  set DeltaR 0.3
+
+  # minimum pt of tracks
+  set TrackPTMin 1.0
+
+  # maximum transverse impact parameter (in mm)
+  set TrackIPMax 2.0
+
+  # minimum ip significance for the track to be counted
+  set SigMin 2.0
+
+  # minimum number of tracks (high efficiency n=2, high purity n=3)
+  set Ntracks 3
+
+  set Use3D true
+}
+
 ###########
 # b-tagging
 ###########
@@ -750,7 +782,7 @@ module JetFlavorAssociation JetFlavorAssociation {
 module BTagging BTagging {
   set JetInputArray JetEnergyScale/jets
 
-  set BitNumber 0
+  set BitNumber 1
 
   # add EfficiencyFormula {abs(PDG code)} {efficiency formula as a function of eta and pt}
   # PDG code = the highest PDG code of a quark or gluon inside DeltaR cone around jet axis
@@ -776,6 +808,8 @@ module TauTagging TauTagging {
   set ParticleInputArray Delphes/allParticles
   set PartonInputArray Delphes/partons
   set JetInputArray JetEnergyScale/jets
+
+  set BitNumber 0
 
   set DeltaR 0.5
 
