@@ -10,7 +10,7 @@ export HEPMC=$MADGRAPH/HEPTools/hepmc
 export DELPHES=$CURDIR/Delphes-3.4.1
 export PATH=${DELPHES}:${MADGRAPH}/bin:${PATH}
 export LD_LIBRARY_PATH=${PYTHIA8}/lib:${DELPHES}:${LD_LIBRARY_PATH}
-export ROOT_INCLUDE_PATH=${DELPHES}:${ROOT_INCLUDE_PATH}
+export ROOT_INCLUDE_PATH=${DELPHES}:${DELPHES}/external:${ROOT_INCLUDE_PATH}
 # helpful for debugging
 export PYTHONHOME=$LCG
 export VALGRIND_LIB=$LCG/lib/valgrind
