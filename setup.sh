@@ -54,14 +54,15 @@ source $LCGDIR/setup.sh
 if [ -n "$INSTALL_DELPHES" ]; then
 	cd $CURDIR
 	# get delphes source and compile
-	wget -q http://cp3.irmp.ucl.ac.be/downloads/Delphes-3.4.1.tar.gz
-	tar -zxf Delphes-3.4.1.tar.gz
+#	wget -q http://cp3.irmp.ucl.ac.be/downloads/Delphes-3.4.1.tar.gz
+#	tar -zxf Delphes-3.4.1.tar.gz
+	git clone https://github.com/kpedro88/delphes.git Delphes-3.4.1 -b ImproveTrackSmearing-3.4.1
 	cd Delphes-3.4.1
 	make
 
 	# cleanup
-	cd $CURDIR
-	rm Delphes-3.4.1.tar.gz
+#	cd $CURDIR
+#	rm Delphes-3.4.1.tar.gz
 fi
 
 if [ -n "$INSTALL_MADGRAPH" ]; then
@@ -69,7 +70,7 @@ if [ -n "$INSTALL_MADGRAPH" ]; then
 	$ECHO "Download MG5_aMC_v2.5.4.tar.gz"
 	wget -q http://madgraph.physics.illinois.edu/Downloads/MG5_aMC_v2.5.4.tar.gz
 	if [ -n "$INSTALL_PYTHIA" ]; then
-		$ECHO "Download pythia8226.tgz"
+		$ECHO "Download pythia8226a.tgz"
 #		wget -q http://home.thep.lu.se/~torbjorn/pythia8/pythia8226.tgz
 		wget -q 'https://www.dropbox.com/s/7lr6mbz7crf5mpk/pythia8226a.tgz?dl=1' -O pythia8226a.tgz
 #		$ECHO "Download hepmc2.06.09.tgz"
