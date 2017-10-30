@@ -19,7 +19,7 @@ cd scratch/darkgen2
 source init.(c)sh
 ```
 
-\* patched version of Pythia8.226
+\* patched version of Pythia8.226  
 \*\* patched version of Delphes-3.4.1
 
 ## Signal generation
