@@ -4,7 +4,7 @@
 ! All masses & widths in GeV, lifetimes in millimeter
 
 ! 1) Settings used in the main program.
-Main:numberOfEvents = 5000         	! number of events to generate
+Main:numberOfEvents = 10000         	! number of events to generate
 
 ! 2) Settings related to output in init(), next() and stat().
 Init:showChangedSettings = on      ! list changed settings
@@ -59,8 +59,8 @@ HiddenValley:pTminFSR = 4.4
 
 
 ! Settings for dark meson decays. Best don't mess with these
-4900111:0:all =  1 1.0    91    1       -1      	! dark pion decay to down quarks
-4900113:0:all =  1 0.999  91  4900111  4900111	! dark vector to dark pions 99.9%
+4900111:oneChannel =  1 1.0    91    1       -1      	! dark pion decay to down quarks
+4900113:oneChannel =  1 0.999  91  4900111  4900111	! dark vector to dark pions 99.9%
 4900113:addchannel = 1 0.001 91 1 -1	! dark vector to down quarks 0.1%
 
 
