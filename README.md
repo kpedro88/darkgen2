@@ -2,7 +2,7 @@
 
 ## Setup
 
-First-time installation instructions (`-m` for MadGraph5 2.5.4, `-p` for Pythia8.226a\* + LHAPDF6 + HepMC + MG5aMC_PY8_interface, `-d` for Delphes 3.4.1):
+First-time installation instructions (`-m` for MadGraph5 2.5.4, `-p` for Pythia8.226a\* + LHAPDF6 + HepMC + MG5aMC_PY8_interface, `-d` for Delphes 3.4.1a\*\*):
 ```
 mkdir scratch
 cd scratch
@@ -19,7 +19,8 @@ cd scratch/darkgen2
 source init.(c)sh
 ```
 
-\* patched version of Pythia8.226
+\* patched version of Pythia8.226  
+\*\* patched version of Delphes-3.4.1
 
 ## Signal generation
 
